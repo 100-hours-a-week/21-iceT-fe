@@ -1,58 +1,31 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DEFAULT_IMG from '@/assets/defaultProfileImage.png';
+import useInput from '@/hooks/useInput';
+import useFileInput from '@/hooks/useFileInput';
 
 export default function FirstLoginPage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
-  /* 상태 */
-  const [preview, setPreview] = useState<string>(''); // 미리보기 URL
-  const [file, setFile] = useState<File | null>(null);
-  const [nickname, setNickname] = useState('');
-  const [status, setStatus] = useState('');
+  const { value: nickname, onChange: onChangeNickname } = useInput();
+  const { value: statusMessage, onChange: onChangeStatusMessage } = useInput();
+  const { file, preview, onChange: onChangeFile } = useFileInput();
 
-  /* 유효성 메모 */
+  /* 유효성 검사 로직 */
   const nicknameErr = useMemo(() => {
     if (!nickname) return '닉네임을 입력해주세요.';
     if (/\s/.test(nickname)) return '띄어쓰기를 없애주세요.';
     if (nickname.length < 2 || nickname.length > 15)
       return '닉네임은 최소 2자, 최대 15글자까지 작성 가능합니다.';
 
-    return null; // ※ 중복검사는 API로 대체
+    return null;
   }, [nickname]);
 
-  const statusErr = status.length > 50 ? '상태메세지는 최대 50자까지 작성 가능합니다.' : null;
+  const statusErr =
+    statusMessage.length > 50 ? '상태메세지는 최대 50자까지 작성 가능합니다.' : null;
 
   const canSubmit = !nicknameErr && !statusErr && nickname;
-
-  /* 파일 업로드 */
-  const openFileDialog = () => fileRef.current?.click();
-
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const chosen = e.target.files?.[0];
-    if (!chosen) {
-      // 선택 안 하고 닫으면 → 이미지 제거
-      setFile(null);
-      setPreview('');
-
-      return;
-    }
-    if (chosen.size > 5_000_000) {
-      alert('5 MB 이하 이미지만 업로드 가능합니다.');
-      e.target.value = '';
-
-      return;
-    }
-    if (!/\/(jpe?g|png|gif)$/i.test(chosen.type)) {
-      alert('jpg, jpeg, png, gif 형식만 가능합니다.');
-      e.target.value = '';
-
-      return;
-    }
-    setFile(chosen);
-    setPreview(URL.createObjectURL(chosen));
-  };
 
   /* 제출 */
   const handleSubmit = () => {
@@ -77,7 +50,7 @@ export default function FirstLoginPage() {
           className="w-40 h-40 rounded-full object-cover bg-[#EFEFEF]"
         />
         <button
-          onClick={openFileDialog}
+          onClick={() => fileRef.current?.click()}
           className="absolute right-0 bottom-0 w-8 h-8 flex items-center justify-center
                      rounded-full bg-black text-white"
         >
@@ -87,7 +60,7 @@ export default function FirstLoginPage() {
           ref={fileRef}
           type="file"
           accept=".jpg,.jpeg,.png,.gif"
-          onChange={handleFile}
+          onChange={onChangeFile}
           className="hidden"
         />
       </div>
@@ -96,7 +69,7 @@ export default function FirstLoginPage() {
       <label className="mt-6 mb-4 w-full max-w-md text-bold-14">닉네임</label>
       <input
         value={nickname}
-        onChange={e => setNickname(e.target.value)}
+        onChange={onChangeNickname}
         placeholder="닉네임을 입력해주세요"
         className="bg-input w-full max-w-md rounded-lg  py-3 px-4 outline-none text-sm"
       />
@@ -108,8 +81,8 @@ export default function FirstLoginPage() {
       {/* 상태메시지 */}
       <label className="mt-4 mb-4 w-full max-w-md text-bold-14">상태 메시지 (선택)</label>
       <input
-        value={status}
-        onChange={e => setStatus(e.target.value)}
+        value={statusMessage}
+        onChange={onChangeStatusMessage}
         placeholder="상태메세지를 작성해주세요"
         className="bg-input w-full max-w-md rounded-lg py-3 px-4 outline-none text-sm "
       />
