@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DEFAULT_IMG from '@/assets/defaultProfileImage.png';
+import DEFAULT_IMG from '@/assets/defaultProfileImage.svg';
 import useInput from '@/hooks/useInput';
 import useFileInput from '@/hooks/useFileInput';
 
@@ -93,7 +93,7 @@ export default function FirstLoginPage() {
         disabled={!canSubmit}
         onClick={handleSubmit}
         className={`mt-14 w-40 py-3 rounded-md text-white text-sm
-          ${canSubmit ? 'bg-primary hover:brightness-90' : 'bg-gray-400 cursor-not-allowed'}`}
+          ${canSubmit ? 'bg-primary hover:brightness-90' : 'bg-primary-disabled cursor-not-allowed'}`}
       >
         가입하기
       </button>
