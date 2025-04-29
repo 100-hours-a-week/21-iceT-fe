@@ -1,5 +1,11 @@
-const Login = () => {
-  return <div className="text-3xl font-bold underline text-primary">로그인 페이지</div>;
+import LoginCard from '@/pages/Login/components/LoginCard';
+
+const LoginPage = () => {
+  return (
+    <div>
+      <LoginCard />
+    </div>
+  );
 };
 
-export default Login;
+export default LoginPage;
