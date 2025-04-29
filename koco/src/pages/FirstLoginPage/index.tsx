@@ -93,26 +93,27 @@ export default function FirstLoginPage() {
       </div>
 
       {/* 닉네임 */}
-      <label className="mt-10 w-full max-w-md text-bold-14">닉네임</label>
+      <label className="mt-6 mb-4 w-full max-w-md text-bold-14">닉네임</label>
       <input
         value={nickname}
         onChange={e => setNickname(e.target.value)}
         placeholder="닉네임을 입력해주세요"
-        className="mt-2 w-full max-w-md rounded-lg bg-[#F6F6F4] py-3 px-4 outline-none text-sm"
+        className="bg-input w-full max-w-md rounded-lg  py-3 px-4 outline-none text-sm"
       />
-      {nicknameErr && (
-        <p className="mt-1 text-text-error text-xs w-full max-w-md py-3 px-4">{nicknameErr}</p>
-      )}
+
+      <p className="text-text-error text-xs w-full max-w-md py-3 px-4 h-8">
+        {nicknameErr && nicknameErr}
+      </p>
 
       {/* 상태메시지 */}
-      <label className="mt-8 w-full max-w-md text-bold-14">상태 메시지 (선택)</label>
+      <label className="mt-4 mb-4 w-full max-w-md text-bold-14">상태 메시지 (선택)</label>
       <input
         value={status}
         onChange={e => setStatus(e.target.value)}
         placeholder="상태메세지를 작성해주세요"
-        className="mt-2 w-full max-w-md rounded-lg bg-[#F6F6F4] py-3 px-4 outline-none text-sm"
+        className="bg-input w-full max-w-md rounded-lg py-3 px-4 outline-none text-sm "
       />
-      {statusErr && <p className="mt-1 text-text-error text-xs text-left">{statusErr}</p>}
+      <p className="text-text-error text-xs text-left h-8">{statusErr && statusErr}</p>
 
       {/* 가입 버튼 */}
       <button

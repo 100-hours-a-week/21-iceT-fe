@@ -2,7 +2,7 @@ import LoginCard from '@/pages/Login/components/LoginCard';
 
 const LoginPage = () => {
   return (
-    <div>
+    <div className="flex w-full items-center justify-center min-h-screen">
       <LoginCard />
     </div>
   );

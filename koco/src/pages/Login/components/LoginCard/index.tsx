@@ -1,8 +1,9 @@
 import Logo from '@/assets/Logo.png';
+import { useNavigate } from 'react-router-dom';
 
 const LoginCard = () => {
   return (
-    <div className="flex w-full flex-col items-center justify-center min-h-screen gap-4">
+    <div className="flex flex-col justify-center gap-4 text-center">
       <img src={Logo} alt="Logo" />
       <title>Koco</title>
       <p className="text-m font-semibold">당신을 위한 코딩 교육 플랫폼</p>
@@ -13,9 +14,12 @@ const LoginCard = () => {
 export default LoginCard;
 
 const KakaoButton = () => {
+  const navigate = useNavigate();
+
   const handleLogin = () => {
-    const link = `https://kauth.kakao.com/oauth/authorize?redirect_uri=${import.meta.env.VITE_REDIRECT_URL}&client_id=${import.meta.env.VITE_KAKAO_CLIENT_ID}&response_type=code`;
-    window.location.href = link;
+    navigate('/complete-profile');
+    // const link = `https://kauth.kakao.com/oauth/authorize?redirect_uri=${import.meta.env.VITE_REDIRECT_URL}&client_id=${import.meta.env.VITE_KAKAO_CLIENT_ID}&response_type=code`;
+    // window.location.href = link;
   };
 
   return (
