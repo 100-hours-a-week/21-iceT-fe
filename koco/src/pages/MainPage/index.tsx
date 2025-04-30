@@ -7,14 +7,12 @@ import Header from '@/components/layout/Header';
 
 const MainPage = () => {
   return (
-    <div>
-      <div className="flex flex-col gap-6 p-6">
-        <Header />
-        <ProfileCard />
-        <ContinuousDayCard />
-        <TotalStudyCard />
-        <GameBannerCard />
-      </div>
+    <div className="flex flex-col gap-6 p-6 pb-30">
+      <Header />
+      <ProfileCard />
+      <ContinuousDayCard />
+      <TotalStudyCard />
+      <GameBannerCard />
       <BottomNav />
     </div>
   );

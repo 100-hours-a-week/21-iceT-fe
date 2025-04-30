@@ -1,4 +1,4 @@
-import Logo from '@/assets/Logo.png';
+import Logo from '@/assets/Logo.svg';
 import { useNavigate } from 'react-router-dom';
 
 const LoginCard = () => {

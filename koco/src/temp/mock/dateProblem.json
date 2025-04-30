@@ -1,0 +1,17 @@
+{
+  "date": "2025-04-10",
+  "problemSetId": 42,
+  "isAnswered": false,
+  "problems": [
+    {
+      "problemId": 1136,
+      "title": "컵 쌓기",
+      "tier": "Bronze II"
+    },
+    {
+      "problemId": 1137,
+      "title": "수열 만들기",
+      "tier": "Silver IV"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DEFAULT_IMG from '@/assets/defaultProfileImage.svg';
 import useInput from '@/hooks/useInput';
 import useFileInput from '@/hooks/useFileInput';
+import Button from '@/components/ui/Button';
 
 export default function FirstLoginPage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -89,14 +90,14 @@ export default function FirstLoginPage() {
       <p className="text-text-error text-xs text-left h-8">{statusErr && statusErr}</p>
 
       {/* 가입 버튼 */}
-      <button
+      <Button
         disabled={!canSubmit}
         onClick={handleSubmit}
         className={`mt-14 w-40 py-3 rounded-md text-white text-sm
           ${canSubmit ? 'bg-primary hover:brightness-90' : 'bg-primary-disabled cursor-not-allowed'}`}
       >
         가입하기
-      </button>
+      </Button>
     </div>
   );
 }

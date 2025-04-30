@@ -48,6 +48,7 @@ picture,
 video,
 canvas,
 svg {
+  cursor: pointer;
   display: block;
   max-width: 100%;
 }
