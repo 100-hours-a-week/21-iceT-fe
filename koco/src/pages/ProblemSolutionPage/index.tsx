@@ -1,13 +1,15 @@
 import BottomNav from '@/components/layout/BottomNav';
 import PageHeader from '@/components/layout/PageHeader';
 import ProblemDetailSection from './components/ProblemDetailSection';
+import ProblemSolutionSection from './components/ProblemSolutionSection';
 
 const ProblemSolutionPage = () => {
   return (
     <div>
       <PageHeader title="문제 해설" />
-      <div className="flex justify-between items-center text-sm shadow-md">
+      <div className=" shadow-md">
         <ProblemDetailSection />
+        <ProblemSolutionSection />
       </div>
       <BottomNav />
     </div>
