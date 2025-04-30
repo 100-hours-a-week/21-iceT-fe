@@ -6,7 +6,7 @@ const ProblemDetailSection = () => {
         <span>&lt; 이전 문제</span>
         <span>다음 문제 &gt;</span>
       </div>
-      <h1 className="text-xl">1978번 소수찾기</h1>
+      <h1 className="text-xl font-bold">1978번 소수찾기</h1>
 
       {/* 제한 조건 테이블 */}
       <table className="w-full mt-4 mb-6 text-sm border border-border">

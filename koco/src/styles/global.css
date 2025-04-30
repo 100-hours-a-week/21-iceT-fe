@@ -52,35 +52,3 @@ svg {
   display: block;
   max-width: 100%;
 }
-
-/* 리스트 초기화 */
-ul,
-ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* 기본 폰트 크기 정리 */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
-  margin: 0;
-  font-weight: normal;
-}
-
-/* strong, b 태그 굵기 */
-strong,
-b {
-  font-weight: bold;
-}
-
-/* 테이블 초기화 */
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
