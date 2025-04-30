@@ -4,10 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DEFAULT_IMG from '@/assets/defaultProfileImage.svg';
 
 const ProfileCard = () => {
-  const handleClick = () => {
-    const navigate = useNavigate();
-    navigate('/survey');
-  };
+  const navigate = useNavigate();
 
   return (
     <Card className="p-4">
@@ -25,7 +22,10 @@ const ProfileCard = () => {
         </div>
 
         <div className="w-full border-2 border-border border-t my-3" />
-        <Button className="bg-secondary hover:bg-secondary-hover w-full" onClick={handleClick}>
+        <Button
+          className="bg-secondary hover:bg-secondary-hover w-full"
+          onClick={() => navigate('/survey')}
+        >
           오늘의 학습 설문하고 해설보기
         </Button>
       </div>
