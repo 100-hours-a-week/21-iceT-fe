@@ -5,6 +5,7 @@ import FirstLoginPage from '@/pages/FirstLoginPage';
 import MainPage from '@/pages/MainPage';
 import SurveyPage from '@/pages/SurveyPage';
 import ProblemListPage from '@/pages/ProblemListPage';
+import ProblemSolutionPage from '@/pages/ProblemSolutionPage';
 
 const RootRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const RootRoutes = () => {
           <Route path="/home" element={<MainPage />} />
           <Route path="/survey" element={<SurveyPage />} />
           <Route path="/problems" element={<ProblemListPage />} />
+          <Route path="/problems/:id" element={<ProblemSolutionPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
