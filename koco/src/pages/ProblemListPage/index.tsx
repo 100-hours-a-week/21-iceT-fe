@@ -8,6 +8,7 @@ const ProblemListPage = () => {
     <div className="bg-background min-h-screen">
       <PageHeader title="문제 해설" />
       <Calendar />
+      <hr className="border-border" />
       {MOCK_PROBLEM_DATA.problems.map(problem => (
         <ProblemItem
           key={problem.problemId}
