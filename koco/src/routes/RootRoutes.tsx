@@ -12,7 +12,7 @@ import { AuthProvider } from '@/context/AuthContext';
 
 const RootRoutes = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.NODE_ENV === 'qa' ? '/admin-preview' : '/'}>
       <AuthProvider>
         <Routes>
           <Route element={<AppLayout />}>
