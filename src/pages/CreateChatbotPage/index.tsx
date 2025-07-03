@@ -1,3 +1,4 @@
+import useStartSession from '@/features/chatbot/hooks/useStartSession';
 import useInput from '@/shared/hooks/useInput';
 import useSubmitButton from '@/shared/hooks/useSubmitButton';
 import BottomNav from '@/shared/layout/BottomNav';
@@ -12,6 +13,7 @@ const CreateChatbotPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('C++');
   const [selectedMode, setSelectedMode] = useState('라이브 코딩 면접 대비');
   const { value: code, onChange: onChangeCode } = useInput('');
+  const startSessionMutation = useStartSession();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,13 +47,30 @@ const CreateChatbotPage = () => {
   const submitErr = problemNumberError || codeError;
   const { isDisabled, buttonText } = useSubmitButton({ isLoading, submitErr });
 
+  // 챗봇 모드 데이터 처리
+  const convertModeText = (mode: string) => {
+    if (mode === '내 코드 피드백') return 'feedback';
+    if (mode === '라이브 코딩 면접 대비') return 'interview';
+  };
+
   const handleSubmit = async () => {
     if (submitErr) return;
 
-    console.log({ problemNumber, selectedLanguage, selectedMode, code });
+    console.log({
+      problemNumber: Number(problemNumber),
+      language: selectedLanguage,
+      mode: convertModeText(selectedMode),
+      userCode: code,
+    });
 
     setIsLoading(true);
     try {
+      // await startSessionMutation.mutate({
+      //   problemNumber: Number(problemNumber),
+      //   language: selectedLanguage,
+      //   mode: selectedMode,
+      //   userCode: code,
+      // });
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert('AI 챗봇이 시작되었습니다!');
 
@@ -87,7 +106,7 @@ const CreateChatbotPage = () => {
         <div>
           <label className="block text-lg font-medium text-gray-900 mb-3">언어 선택</label>
           <div className="flex gap-3">
-            {['C++', 'JAVA', 'Python'].map(lang => (
+            {['c++', 'java', 'python'].map(lang => (
               <button
                 key={lang}
                 onClick={() => setSelectedLanguage(lang)}
