@@ -36,8 +36,8 @@ const CreateChatbotPage = () => {
   const codeError = useMemo(() => {
     if (!code) return '코드를 입력해주세요.';
 
-    if (code.length > 2000) {
-      return '2000자까지 입력가능합니다.';
+    if (code.length > 10000) {
+      return '최대 10000자까지 입력가능합니다.';
     }
 
     return null;
@@ -65,6 +65,7 @@ const CreateChatbotPage = () => {
 
     setIsLoading(true);
     try {
+      // api 호출
       // await startSessionMutation.mutate({
       //   problemNumber: Number(problemNumber),
       //   language: selectedLanguage,
@@ -74,7 +75,7 @@ const CreateChatbotPage = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert('AI 챗봇이 시작되었습니다!');
 
-      navigate('/chatbot', { state: { mode: selectedMode } });
+      navigate(`/chatbot/${2}`, { state: { mode: selectedMode } });
     } catch {
       alert('백준에 존재하지 않는 문제 번호입니다.');
     } finally {
@@ -167,7 +168,7 @@ const CreateChatbotPage = () => {
             className="w-full h-80 px-4 py-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
           />
           <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-gray-500">{code.length}/2000</span>
+            <span className="text-xs text-gray-500">{code.length}/10000</span>
           </div>
         </div>
 

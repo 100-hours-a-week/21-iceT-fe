@@ -50,7 +50,7 @@ const Router = () => {
                 <Route path="/post/:id/edit" element={<EditPostPage />} />
                 <Route path="/my-posts" element={<MyPostPage />} />
                 <Route path="/new-chat" element={<CreateChatbotPage />} />
-                <Route path="/chatbot" element={<ChattingPage />} />
+                <Route path="/chatbot/:id" element={<ChattingPage />} />
               </Route>
             </Route>
           </Routes>
