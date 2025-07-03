@@ -65,7 +65,7 @@ const CreateChatbotPage = () => {
 
     setIsLoading(true);
     try {
-      // api 호출
+      // 1. api 호출
       // await startSessionMutation.mutate({
       //   problemNumber: Number(problemNumber),
       //   language: selectedLanguage,
@@ -73,8 +73,8 @@ const CreateChatbotPage = () => {
       //   userCode: code,
       // });
       await new Promise(resolve => setTimeout(resolve, 1000));
+      // 2. SSE 연결
       alert('AI 챗봇이 시작되었습니다!');
-
       navigate(`/chatbot/${2}`, { state: { mode: selectedMode } });
     } catch {
       alert('백준에 존재하지 않는 문제 번호입니다.');
