@@ -46,6 +46,7 @@ const ChattingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mode = useLocation().state?.mode;
+  const code = useLocation().state?.code;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
