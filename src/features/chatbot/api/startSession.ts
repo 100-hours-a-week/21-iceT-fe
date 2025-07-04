@@ -9,7 +9,7 @@ export interface IStartSessionRequest {
 }
 
 const startSession = async (data: IStartSessionRequest) => {
-  const response = await axiosInstance.post(`${API_SUB_URLS_V2}/chat/session`, data);
+  const response = await axiosInstance.post(`${API_SUB_URLS_V2}/chat/init`, data);
 
   return response.data.data;
 };
