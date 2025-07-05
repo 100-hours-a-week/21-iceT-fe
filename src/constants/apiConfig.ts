@@ -4,3 +4,4 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localho
 /** API SUB URL입니다. */
 export const API_SUB_URLS = '/api/backend/v1';
 export const API_SUB_URLS_V3 = '/api/backend/v3';
+export const API_SUB_URLS_V2 = '/api/backend/v2';
