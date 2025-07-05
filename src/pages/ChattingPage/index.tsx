@@ -1,11 +1,12 @@
+import { API_BASE_URL, API_SUB_URLS_V2 } from '@/constants/apiConfig';
 import ChatbotSystemMessage from '@/features/chatbot/components/ChatbotSystemMessage';
-import useSendMessage from '@/features/chatbot/hooks/useSendMessage';
-import useStartSession from '@/features/chatbot/hooks/useStartSession';
 import useInput from '@/shared/hooks/useInput';
 import BottomNav from '@/shared/layout/BottomNav';
 import PageHeader from '@/shared/layout/PageHeader';
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+
+import MDEditor from '@uiw/react-md-editor';
 
 // 메시지 타입 정의
 interface IMessage {
@@ -13,45 +14,12 @@ interface IMessage {
   type: 'user' | 'bot' | 'system';
   content: string;
 }
+
 // location.state 타입 정의
 interface ILocationState {
   mode?: string;
   code?: string;
 }
-
-const tempMessages: IMessage[] = [
-  {
-    id: 2,
-    type: 'user',
-    content: `#include <iostream>
-using namespace std;
-
-int main(void) {
-    ios::sync_with_stdio(false); cin.tie(0);
-    cout.tie(0);
-    
-    long long s, cin >> s;
-    long long sum = 0;
-    int i = 1;
-    
-    while (sum < s) {`,
-  },
-  {
-    id: 4,
-    type: 'user',
-    content: '이 코드에서 def ~~~ 의 결과 보완할 다음에 같이 고치는게 좋아',
-  },
-  {
-    id: 5,
-    type: 'user',
-    content: 'def main :',
-  },
-  {
-    id: 6,
-    type: 'bot',
-    content: '네가 작성한 코드를 수정하여 완성해 보겠습니다',
-  },
-];
 
 const ChattingPage = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
@@ -59,17 +27,21 @@ const ChattingPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSessionInitialized, setIsSessionInitialized] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const messageIdCounter = useRef(0); // 고유 ID 생성용
 
   // URL 파라미터와 location state 가져오기
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
   const { mode, code } = (location.state as ILocationState) || {};
 
-  const startSessionMutation = useStartSession();
-  const sendMessageMutation = useSendMessage();
+  // 고유 ID 생성 함수
+  const generateMessageId = () => {
+    messageIdCounter.current += 1;
+
+    return Date.now() + messageIdCounter.current;
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,9 +51,184 @@ const ChattingPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  // 페이지 로드 시 세션 초기화
+  // 세션 시작 시 SSE 스트리밍 처리
+  const handleStartSessionStreaming = async (sessionId: number, initialCode?: string) => {
+    try {
+      setIsLoading(true);
+
+      // 초기 코드가 있으면 사용자 메시지로 추가
+      if (!initialCode) {
+        alert('잘못된 경로입니다');
+        navigate('/new-chat');
+
+        return;
+      }
+      const initialMessage: IMessage = {
+        id: generateMessageId(),
+        type: 'user',
+        content: initialCode,
+      };
+      setMessages([initialMessage]);
+
+      // 봇 메시지 추가 (스트리밍용)
+      const botMessageId = generateMessageId();
+      const botMessage: IMessage = {
+        id: botMessageId,
+        type: 'bot',
+        content: '',
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+
+      // 첫 응답을 위한 API 호출 (POST 요청)
+      const response = await fetch(
+        `${API_BASE_URL}${API_SUB_URLS_V2}/chat/session/${sessionId}/start`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to start session');
+      }
+
+      // 응답이 SSE인지 확인
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/event-stream')) {
+        // SSE 응답 처리 - 응답 본문에서 스트리밍 URL 추출하거나 직접 처리
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              setIsLoading(false);
+              break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('event:message')) {
+                continue;
+              }
+              if (line.startsWith('data:')) {
+                const data = line.substring(5).trim();
+                if (data) {
+                  setMessages(prev =>
+                    prev.map(msg =>
+                      msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                    )
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to handle start session streaming:', error);
+      setIsLoading(false);
+
+      // 에러 메시지 표시
+      const errorBotMessageId = generateMessageId();
+      setMessages(prev => [
+        ...prev,
+        {
+          id: errorBotMessageId,
+          type: 'bot',
+          content: '세션 시작 중 오류가 발생했습니다.',
+        },
+      ]);
+    }
+  };
+
+  // followup 메시지 SSE 스트리밍 처리
+  const handleFollowupStreaming = async (userMessage: string, sessionId: number) => {
+    try {
+      setIsLoading(true);
+
+      // 봇 메시지 추가 (스트리밍용)
+      const botMessageId = generateMessageId();
+      const botMessage: IMessage = {
+        id: botMessageId,
+        type: 'bot',
+        content: '',
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+
+      // /followup API 호출 (POST 요청)
+      const response = await fetch(
+        `${API_BASE_URL}${API_SUB_URLS_V2}/chat/session/${sessionId}/followup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            content: userMessage,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to send followup message');
+      }
+
+      // 응답이 SSE인지 확인
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/event-stream')) {
+        // SSE 응답 처리
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              setIsLoading(false);
+              break;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('event:message')) {
+                continue; // event 타입 확인
+              }
+              if (line.startsWith('data:')) {
+                const data = line.substring(5);
+                if (data.trim() && data !== '[DONE]') {
+                  setMessages(prev =>
+                    prev.map(msg =>
+                      msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                    )
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to handle followup streaming:', error);
+      setIsLoading(false);
+    }
+  };
+
+  // 페이지 로드 시 세션 시작
   useEffect(() => {
-    const initializeSession = async () => {
+    const startSession = async () => {
       if (id && !isSessionInitialized) {
         try {
           // sessionId를 number로 변환하고 유효성 검사
@@ -92,24 +239,11 @@ const ChattingPage = () => {
             return;
           }
 
-          // location.state.code가 있으면 첫 메시지로 설정
-          if (code) {
-            const initialMessage: IMessage = {
-              id: 1,
-              type: 'user',
-              content: code,
-            };
-            setMessages([initialMessage]);
-          } else {
-            // code가 없으면 기본 메시지들 사용
-            setMessages(tempMessages);
-          }
-
-          // 세션 시작 API 호출
-          await startSessionMutation.mutateAsync(sessionId);
+          // 세션 시작 및 스트리밍 처리
+          await handleStartSessionStreaming(sessionId, code);
           setIsSessionInitialized(true);
         } catch (error) {
-          console.error('Failed to initialize session:', error);
+          console.error('Failed to start session:', error);
         }
       } else if (!id) {
         // sessionId가 없으면 기본 메시지들 사용
@@ -118,97 +252,10 @@ const ChattingPage = () => {
       }
     };
 
-    initializeSession();
-  }, [id, code, isSessionInitialized, startSessionMutation]);
+    startSession();
+  }, [id, code, isSessionInitialized]);
 
-  // 메시지 전송 API 호출 함수
-  const sendMessageToAPI = async (content: string, sessionId: number) => {
-    try {
-      await sendMessageMutation.mutate({ content, sessionId });
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      throw error;
-    }
-  };
-
-  // 스트리밍 응답 처리 함수
-  const handleStreamingResponse = async (userMessage: string) => {
-    if (!id) return;
-
-    const sessionIdNumber = Number(id);
-    if (isNaN(sessionIdNumber)) return;
-
-    try {
-      setIsLoading(true);
-
-      // 메시지 전송 API 호출
-      await sendMessageToAPI(userMessage, sessionIdNumber);
-
-      // 스트리밍 응답 받기
-      const eventSource = new EventSource(
-        `http://localhost:8080/api/backend/v2/chat/session/${sessionIdNumber}/stream`
-      );
-
-      eventSourceRef.current = eventSource;
-      setStreamingMessage('');
-
-      // 봇 메시지 추가 (스트리밍용)
-      const botMessageId = Date.now();
-      const botMessage: IMessage = {
-        id: botMessageId,
-        type: 'bot',
-        content: '',
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-
-      eventSource.onmessage = event => {
-        const data = event.data;
-
-        if (data === '[DONE]') {
-          eventSource.close();
-          setIsLoading(false);
-          setStreamingMessage('');
-
-          return;
-        }
-
-        // 실시간으로 봇 메시지 업데이트
-        setMessages(prev =>
-          prev.map(msg => (msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg))
-        );
-      };
-
-      eventSource.onerror = error => {
-        console.error('EventSource error:', error);
-        eventSource.close();
-        setIsLoading(false);
-        setStreamingMessage('');
-
-        // 에러 메시지 표시
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === botMessageId
-              ? { ...msg, content: '응답을 받는 중 오류가 발생했습니다.' }
-              : msg
-          )
-        );
-      };
-    } catch (error) {
-      console.error('Failed to handle streaming response:', error);
-      setIsLoading(false);
-
-      // 에러 메시지 추가
-      const errorMessage: IMessage = {
-        id: Date.now(),
-        type: 'bot',
-        content: '메시지 전송에 실패했습니다.',
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    }
-  };
-
-  // 메시지를 전송합니다 (무한 호출 방지)
+  // 메시지 전송
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -217,8 +264,9 @@ const ChattingPage = () => {
       eventSourceRef.current.close();
     }
 
+    // 사용자 메시지 추가
     const newMessage: IMessage = {
-      id: Date.now(),
+      id: generateMessageId(),
       type: 'user',
       content: inputMessage,
     };
@@ -227,8 +275,13 @@ const ChattingPage = () => {
     const messageToSend = inputMessage;
     reset();
 
-    // 스트리밍 응답 처리
-    await handleStreamingResponse(messageToSend);
+    // sessionId 가져오기
+    if (!id) return;
+    const sessionIdNumber = Number(id);
+    if (isNaN(sessionIdNumber)) return;
+
+    // followup 스트리밍 응답 처리
+    await handleFollowupStreaming(messageToSend, sessionIdNumber);
   };
 
   // 컴포넌트 언마운트 시 EventSource 정리
@@ -267,7 +320,7 @@ const ChattingPage = () => {
         className="flex-1 overflow-y-auto p-4 space-y-4"
         style={{ maxHeight: 'calc(100vh - 250px)' }}
       >
-        <ChatbotSystemMessage mode={mode} />
+        <ChatbotSystemMessage mode={mode as string} />
         {messages.map(message => (
           <div
             key={message.id}
@@ -286,28 +339,36 @@ const ChattingPage = () => {
             )}
 
             {message.type === 'bot' && (
-              <div className="bg-gray-100 border rounded-lg p-3 max-w-2xl text-black">
-                <p className="text-sm text-black whitespace-pre-wrap">{message.content}</p>
+              <div className="max-w-4xl w-full">
+                <div data-color-mode="light">
+                  <MDEditor.Markdown
+                    source={message.content.replace(/^"|"$/g, '') || ''}
+                    style={{
+                      backgroundColor: 'transparent',
+                      fontSize: '14px',
+                      lineHeight: '2.5',
+                    }}
+                    className="!bg-transparent"
+                  />
+                </div>
               </div>
             )}
           </div>
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 border rounded-lg p-3 max-w-xs">
-              <div className="flex items-center gap-2 text-gray-600">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.1s' }}
-                />
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.2s' }}
-                />
-                <span className="text-sm">응답 생성 중...</span>
-              </div>
+          <div className="flex justify-start max-w-4xl w-full">
+            <div className="flex items-center gap-2 text-gray-600 py-2">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: '0.1s' }}
+              />
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: '0.2s' }}
+              />
+              <span className="text-sm">응답 생성 중...</span>
             </div>
           </div>
         )}
