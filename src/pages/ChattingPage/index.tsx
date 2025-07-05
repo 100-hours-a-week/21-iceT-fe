@@ -56,7 +56,6 @@ const ChattingPage = () => {
     try {
       setIsLoading(true);
 
-      // 초기 코드가 있으면 사용자 메시지로 추가
       if (!initialCode) {
         alert('잘못된 경로입니다');
         navigate('/new-chat');
@@ -246,7 +245,6 @@ const ChattingPage = () => {
           console.error('Failed to start session:', error);
         }
       } else if (!id) {
-        // sessionId가 없으면 기본 메시지들 사용
         alert('잘못된 경로입니다');
         navigate('/new-chat');
       }
