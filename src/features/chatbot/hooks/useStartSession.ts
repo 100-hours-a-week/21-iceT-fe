@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import startSession, { IStartSessionRequest } from '../api/startSession';
+import startSession from '../api/startSession';
 
 const useStartSession = () => {
   return useMutation({
-    mutationFn: (data: IStartSessionRequest) => startSession(data),
+    mutationFn: (sessionId: number) => startSession(sessionId),
   });
 };
 export default useStartSession;

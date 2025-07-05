@@ -12,9 +12,12 @@ export interface ISendMessageRequest {
  * @returns
  */
 const sendMessage = async (data: ISendMessageRequest) => {
-  const response = await axiosInstance.post(`${API_SUB_URLS_V2}/chat/session/${data.sessionId}`, {
-    content: data.content,
-  });
+  const response = await axiosInstance.post(
+    `${API_SUB_URLS_V2}/chat/session/${data.sessionId}/followup`,
+    {
+      content: data.content,
+    }
+  );
 
   return response.data.data;
 };

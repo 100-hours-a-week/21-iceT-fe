@@ -1,11 +1,25 @@
 import ChatbotSystemMessage from '@/features/chatbot/components/ChatbotSystemMessage';
+import useSendMessage from '@/features/chatbot/hooks/useSendMessage';
+import useStartSession from '@/features/chatbot/hooks/useStartSession';
 import useInput from '@/shared/hooks/useInput';
 import BottomNav from '@/shared/layout/BottomNav';
 import PageHeader from '@/shared/layout/PageHeader';
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-const tempMessages = [
+// 메시지 타입 정의
+interface IMessage {
+  id: number;
+  type: 'user' | 'bot' | 'system';
+  content: string;
+}
+// location.state 타입 정의
+interface ILocationState {
+  mode?: string;
+  code?: string;
+}
+
+const tempMessages: IMessage[] = [
   {
     id: 2,
     type: 'user',
@@ -40,13 +54,22 @@ int main(void) {
 ];
 
 const ChattingPage = () => {
-  const [messages, setMessages] = useState(tempMessages);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const { value: inputMessage, onChange, reset } = useInput();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const mode = useLocation().state?.mode;
-  const code = useLocation().state?.code;
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // URL 파라미터와 location state 가져오기
+  const { id } = useParams<{ id?: string }>();
+  const location = useLocation();
+  const { mode, code } = (location.state as ILocationState) || {};
+
+  const startSessionMutation = useStartSession();
+  const sendMessageMutation = useSendMessage();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -56,33 +79,168 @@ const ChattingPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  // 메시지를 전송합니다
+  // 페이지 로드 시 세션 초기화
+  useEffect(() => {
+    const initializeSession = async () => {
+      if (id && !isSessionInitialized) {
+        try {
+          // sessionId를 number로 변환하고 유효성 검사
+          const sessionId = Number(id);
+          if (isNaN(sessionId)) {
+            console.error('Invalid sessionId: must be a number');
+
+            return;
+          }
+
+          // location.state.code가 있으면 첫 메시지로 설정
+          if (code) {
+            const initialMessage: IMessage = {
+              id: 1,
+              type: 'user',
+              content: code,
+            };
+            setMessages([initialMessage]);
+          } else {
+            // code가 없으면 기본 메시지들 사용
+            setMessages(tempMessages);
+          }
+
+          // 세션 시작 API 호출
+          await startSessionMutation.mutateAsync(sessionId);
+          setIsSessionInitialized(true);
+        } catch (error) {
+          console.error('Failed to initialize session:', error);
+        }
+      } else if (!id) {
+        // sessionId가 없으면 기본 메시지들 사용
+        alert('잘못된 경로입니다');
+        navigate('/new-chat');
+      }
+    };
+
+    initializeSession();
+  }, [id, code, isSessionInitialized, startSessionMutation]);
+
+  // 메시지 전송 API 호출 함수
+  const sendMessageToAPI = async (content: string, sessionId: number) => {
+    try {
+      await sendMessageMutation.mutate({ content, sessionId });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      throw error;
+    }
+  };
+
+  // 스트리밍 응답 처리 함수
+  const handleStreamingResponse = async (userMessage: string) => {
+    if (!id) return;
+
+    const sessionIdNumber = Number(id);
+    if (isNaN(sessionIdNumber)) return;
+
+    try {
+      setIsLoading(true);
+
+      // 메시지 전송 API 호출
+      await sendMessageToAPI(userMessage, sessionIdNumber);
+
+      // 스트리밍 응답 받기
+      const eventSource = new EventSource(
+        `http://localhost:8080/api/backend/v2/chat/session/${sessionIdNumber}/stream`
+      );
+
+      eventSourceRef.current = eventSource;
+      setStreamingMessage('');
+
+      // 봇 메시지 추가 (스트리밍용)
+      const botMessageId = Date.now();
+      const botMessage: IMessage = {
+        id: botMessageId,
+        type: 'bot',
+        content: '',
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+
+      eventSource.onmessage = event => {
+        const data = event.data;
+
+        if (data === '[DONE]') {
+          eventSource.close();
+          setIsLoading(false);
+          setStreamingMessage('');
+
+          return;
+        }
+
+        // 실시간으로 봇 메시지 업데이트
+        setMessages(prev =>
+          prev.map(msg => (msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg))
+        );
+      };
+
+      eventSource.onerror = error => {
+        console.error('EventSource error:', error);
+        eventSource.close();
+        setIsLoading(false);
+        setStreamingMessage('');
+
+        // 에러 메시지 표시
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === botMessageId
+              ? { ...msg, content: '응답을 받는 중 오류가 발생했습니다.' }
+              : msg
+          )
+        );
+      };
+    } catch (error) {
+      console.error('Failed to handle streaming response:', error);
+      setIsLoading(false);
+
+      // 에러 메시지 추가
+      const errorMessage: IMessage = {
+        id: Date.now(),
+        type: 'bot',
+        content: '메시지 전송에 실패했습니다.',
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  // 메시지를 전송합니다 (무한 호출 방지)
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    const newMessage = {
-      id: messages.length + 1,
+    // 이미 로딩 중이면 중복 요청 방지
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    const newMessage: IMessage = {
+      id: Date.now(),
       type: 'user',
       content: inputMessage,
     };
 
     setMessages(prev => [...prev, newMessage]);
+    const messageToSend = inputMessage;
     reset();
-    setIsLoading(true);
 
-    // 봇 응답 시뮬레이션
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        type: 'bot',
-        content: '답변을 생성하고 있습니다...',
-      };
-      setMessages(prev => [...prev, botResponse]);
-      setIsLoading(false);
-    }, 1000);
+    // 스트리밍 응답 처리
+    await handleStreamingResponse(messageToSend);
   };
 
-  const handleKeyPress = e => {
+  // 컴포넌트 언마운트 시 EventSource 정리
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -94,7 +252,7 @@ const ChattingPage = () => {
       {/* 헤더 */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between">
-          <PageHeader title={mode} />
+          <PageHeader title={mode || '채팅'} />
           <button
             onClick={() => navigate('/chat-sessions')}
             className="text-sm text-blue-600 hover:text-blue-800 transition-colors px-4"
@@ -122,14 +280,14 @@ const ChattingPage = () => {
             )}
 
             {message.type === 'user' && (
-              <div className="bg-blue-500 text-white rounded-lg p-3 max-w-xs break-words">
-                <p className="text-sm whitespace-pre-line font-mono">{message.content}</p>
+              <div className="bg-blue-500 text-white rounded-lg p-3 max-w-2xl break-words">
+                <p className="text-sm whitespace-pre-wrap font-mono">{message.content}</p>
               </div>
             )}
 
             {message.type === 'bot' && (
-              <div className="rounded-lg p-3 max-w-xs text-black">
-                <p className="text-sm text-black">{message.content}</p>
+              <div className="bg-gray-100 border rounded-lg p-3 max-w-2xl text-black">
+                <p className="text-sm text-black whitespace-pre-wrap">{message.content}</p>
               </div>
             )}
           </div>
@@ -137,17 +295,18 @@ const ChattingPage = () => {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-blue-500 text-white rounded-lg p-3 max-w-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
+            <div className="bg-gray-100 border rounded-lg p-3 max-w-xs">
+              <div className="flex items-center gap-2 text-gray-600">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                   style={{ animationDelay: '0.1s' }}
                 />
                 <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                   style={{ animationDelay: '0.2s' }}
                 />
+                <span className="text-sm">응답 생성 중...</span>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import useStartSession from '@/features/chatbot/hooks/useStartSession';
+import useCreateSession from '@/features/chatbot/hooks/useCreateSession';
 import useInput from '@/shared/hooks/useInput';
 import useSubmitButton from '@/shared/hooks/useSubmitButton';
 import BottomNav from '@/shared/layout/BottomNav';
@@ -13,7 +13,7 @@ const CreateChatbotPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('C++');
   const [selectedMode, setSelectedMode] = useState('라이브 코딩 면접 대비');
   const { value: code, onChange: onChangeCode } = useInput('');
-  const startSessionMutation = useStartSession();
+  const createSessionMutation = useCreateSession();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,7 +68,7 @@ const CreateChatbotPage = () => {
     setIsLoading(true);
     try {
       //1. api 호출
-      await startSessionMutation.mutate(
+      await createSessionMutation.mutate(
         {
           problemNumber: Number(problemNumber),
           language: selectedLanguage,
