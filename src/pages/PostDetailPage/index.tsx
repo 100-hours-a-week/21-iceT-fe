@@ -83,6 +83,7 @@ const PostDetailPage = () => {
       <main className="px-6">
         <article className="border-b-[2px] border-border">
           <PostMeta
+            problemNumber={postDetailData.problemNumber}
             postId={postDetailData.postId}
             categories={postDetailData.categories}
             title={postDetailData.title}

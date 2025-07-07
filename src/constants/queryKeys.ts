@@ -29,4 +29,7 @@ export const queryKeys = {
   alarm: {
     all: ['alarms'] as const,
   },
+  chatbot: {
+    all: ['chatbots'] as const,
+  },
 };

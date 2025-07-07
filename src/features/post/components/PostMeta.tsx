@@ -17,6 +17,7 @@ interface IPostMetaProps {
   author: Author;
   postId: number;
   onEditConfirm: () => void;
+  problemNumber: number;
 }
 
 const PostMeta = (data: IPostMetaProps) => {
@@ -47,6 +48,7 @@ const PostMeta = (data: IPostMetaProps) => {
 
   return (
     <div className="border-b-[2px] border-border">
+      <p className="text-sm mb-1">| 백준 {data.problemNumber}번</p>
       <div className="flex justify-between">
         <h2 className="text-2xl font-bold text-text-primary mb-4">{data.title}</h2>
         <div className="relative">

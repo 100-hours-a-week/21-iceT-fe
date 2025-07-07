@@ -23,7 +23,7 @@ export default {
         'bold-16': ['16px', { lineHeight: '24px', fontWeight: '700' }],
       },
       colors: {
-        background: '#FFFFFF', // 전체 배경, 피그마:#F9FAFB #fff9f5 #f8f9fa #f8f9fa
+        background: '#FFFFFF', //rgb(247, 246, 246) 전체 배경, 피그마:#F9FAFBrgb(255, 255, 255) #f8f9fa #f8f9fa
         surface: '#FFFFFF', // 카드 배경, 피그마: #FFFFFF
         input: '#F9F9F6', // input 배경 #F9F9F6
 

@@ -1,3 +1,4 @@
+import MDEditor from '@uiw/react-md-editor';
 import { useState } from 'react';
 
 interface ISolutionProps {
@@ -35,6 +36,26 @@ const ProblemSolutionSection = ({
   algorithm,
 }: ISolutionProps) => {
   const [selectedLanguage, setSelectedLanguage] = useState('cpp');
+  const getLanguageExtension = (language: string) => {
+    switch (language) {
+      case 'cpp':
+        return 'cpp';
+      case 'java':
+        return 'java';
+      case 'python':
+        return 'python';
+      default:
+        return 'text';
+    }
+  };
+
+  // 마크다운 형식으로 코드 블록 생성
+  const getMarkdownCode = () => {
+    const code = getCode();
+    const extension = getLanguageExtension(selectedLanguage);
+
+    return `\`\`\`${extension}\n${code}\n\`\`\``;
+  };
 
   // 현재 선택된 언어에 따라 코드 반환
   const getCode = () => {
@@ -59,16 +80,16 @@ const ProblemSolutionSection = ({
   return (
     <section className="max-w-2xl mx-auto p-6 bg-surface rounded-lg shadow-md space-y-6 mb-30">
       <h2 className="text-xl font-bold mb-4">| 문제 요약</h2>
-      <p className="whitespace-pre-line break-words overflow-wrap-anywhere">
-        {formatCode(problemCheck)}
+      <p className="whitespace-pre-line break-words overflow-wrap-anywhere  leading-loose">
+        <MDEditor.Markdown source={problemCheck} />
       </p>
       <h2 className="text-xl font-bold mb-4 ">| 알고리즘</h2>
-      <p className="whitespace-pre-line break-words overflow-wrap-anywhere">
-        {formatCode(algorithm)}
+      <p className="whitespace-pre-line break-words overflow-wrap-anywhere  leading-loose">
+        <MDEditor.Markdown source={formatProblemSolving(algorithm)} />
       </p>
       <h2 className="text-xl font-bold mb-4">| 풀이</h2>
-      <p className="whitespace-pre-line break-words overflow-wrap-anywhere">
-        {formatProblemSolving(problemSolving)}
+      <p className="whitespace-pre-line break-words overflow-wrap-anywhere leading-loose">
+        <MDEditor.Markdown source={formatProblemSolving(problemSolving)} />
       </p>
       <div>
         <h2 className="text-xl font-bold mb-4">| 솔루션 코드</h2>
@@ -104,13 +125,22 @@ const ProblemSolutionSection = ({
             복사
           </button>
         </div>
-
-        <div className="bg-black text-white text-sm rounded-md overflow-hidden">
-          <div className="overflow-x-auto p-4 font-mono">
-            <pre>
-              <code className="whitespace-pre">{getCode()}</code>
-            </pre>
+        <div className="rounded-lg overflow-hidden">
+          <div className="bg-[#2d2d30] px-4 py-2 flex items-center space-x-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full" />
+            <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+            <div className="w-3 h-3 bg-green-500 rounded-full" />
+            <span className="text-gray-400 text-sm ml-4">solution.{selectedLanguage}</span>
           </div>
+
+          <MDEditor.Markdown
+            source={getMarkdownCode()}
+            style={{
+              backgroundColor: 'transparent',
+              color: 'inherit',
+            }}
+            data-color-mode="dark"
+          />
         </div>
       </div>
     </section>

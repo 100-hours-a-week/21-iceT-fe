@@ -53,6 +53,7 @@ const Router = () => {
                 <Route path="/new-chat" element={<CreateChatbotPage />} />
                 <Route path="/chatbot" element={<ChattingPage />} />
                 <Route path="/chat-sessions" element={<SessionPage />} />
+                <Route path="/chatbot/:id" element={<ChattingPage />} />
               </Route>
             </Route>
           </Routes>

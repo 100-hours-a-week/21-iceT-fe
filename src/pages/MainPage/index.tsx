@@ -55,7 +55,7 @@ const MainPage = () => {
   return (
     <>
       <Header hasNotification={false} receiverId={userProfileData.userId} />
-      <div className="flex flex-col gap-6 p-6 pb-30">
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 flex flex-col gap-6 p-6 pb-30">
         <ProfileCard
           profileImgUrl={userProfileData.profileImgUrl}
           nickname={userProfileData.nickname}

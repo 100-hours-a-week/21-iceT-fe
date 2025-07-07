@@ -35,6 +35,13 @@ const CommentInputBox = ({ postId }: ICommentInputBoxProps) => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && canSubmit && !isLoading) {
+      e.preventDefault(); // 기본 엔터키 동작 방지
+      handleRegisterComment();
+    }
+  };
+
   return (
     <div className="flex-1 relative mt-6">
       <input
@@ -42,6 +49,7 @@ const CommentInputBox = ({ postId }: ICommentInputBoxProps) => {
         value={value}
         onChange={onChange}
         disabled={isLoading}
+        onKeyDown={handleKeyDown}
         className={`
               w-full pl-4 pr-12 py-2.5 
               bg-input border border-border rounded-full

@@ -51,7 +51,7 @@ const ProblemDetailSection = (data: IGetProblemSolutionResponse) => {
               href={data.bojUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-2 px-3 bg-secondary text-white rounded-md hover:bg-secondary-hover transition-colors text-sm font-medium"
+              className="py-2 px-3 bg-surface text-white rounded-md transition-colors text-sm font-medium"
             >
               백준 문제 바로가기 →
             </a>
