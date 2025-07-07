@@ -111,6 +111,7 @@ const ChattingPage = () => {
             }
 
             const chunk = decoder.decode(value, { stream: true });
+            console.log(chunk);
             const lines = chunk.split('\n');
 
             for (const line of lines) {
@@ -199,6 +200,7 @@ const ChattingPage = () => {
             }
 
             const chunk = decoder.decode(value, { stream: true });
+            console.log(chunk);
             const lines = chunk.split('\n');
 
             for (const line of lines) {
@@ -207,7 +209,7 @@ const ChattingPage = () => {
               }
               if (line.startsWith('data:')) {
                 const data = line.substring(5);
-                if (data.trim() && data !== '[DONE]') {
+                if (data) {
                   setMessages(prev =>
                     prev.map(msg =>
                       msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
