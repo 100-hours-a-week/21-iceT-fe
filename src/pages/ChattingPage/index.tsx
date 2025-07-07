@@ -370,7 +370,7 @@ const ChattingPage = () => {
 
       {/* 입력 영역 - 고정 */}
       <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4">
-        <div className="flex items-end gap-3">
+        <div className="flex items-center gap-3">
           <div className="flex-1 relative">
             <textarea
               value={inputMessage}
@@ -386,7 +386,7 @@ const ChattingPage = () => {
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className={`p-3 rounded-full transition-colors ${
+            className={`p-3 rounded-full transition-colors  ${
               inputMessage.trim() && !isLoading
                 ? 'bg-black text-white hover:bg-gray-800'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
