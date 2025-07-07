@@ -85,7 +85,7 @@ const ChattingPage = () => {
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
           },
           credentials: 'include',
         }
@@ -95,38 +95,33 @@ const ChattingPage = () => {
         throw new Error('Failed to start session');
       }
 
-      // 응답이 SSE인지 확인
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/event-stream')) {
-        // SSE 응답 처리 - 응답 본문에서 스트리밍 URL 추출하거나 직접 처리
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
+      // SSE 응답 처리 - 응답 본문에서 스트리밍 URL 추출하거나 직접 처리
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              setIsLoading(false);
-              break;
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            setIsLoading(false);
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('event:message')) {
+              continue;
             }
-
-            const chunk = decoder.decode(value, { stream: true });
-            console.log(chunk);
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-              if (line.startsWith('event:message')) {
-                continue;
-              }
-              if (line.startsWith('data:')) {
-                const data = line.substring(5).trim();
-                if (data) {
-                  setMessages(prev =>
-                    prev.map(msg =>
-                      msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                    )
-                  );
-                }
+            if (line.startsWith('data:')) {
+              const data = line.substring(5).trim();
+              if (data) {
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                  )
+                );
               }
             }
           }
@@ -171,6 +166,7 @@ const ChattingPage = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
           },
           credentials: 'include',
           body: JSON.stringify({
@@ -183,39 +179,35 @@ const ChattingPage = () => {
         throw new Error('Failed to send followup message');
       }
 
-      // 응답이 SSE인지 확인
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/event-stream')) {
-        // SSE 응답 처리
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
+      // SSE 응답 처리
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
 
-            if (done) {
-              setIsLoading(false);
-              break;
+          if (done) {
+            setIsLoading(false);
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('event:message')) {
+              continue; // event 타입 확인
             }
-
-            const chunk = decoder.decode(value, { stream: true });
-            console.log(chunk);
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-              if (line.startsWith('event:message')) {
-                continue; // event 타입 확인
-              }
-              if (line.startsWith('data:')) {
-                const data = line.substring(5);
-                if (data) {
-                  setMessages(prev =>
-                    prev.map(msg =>
-                      msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                    )
-                  );
-                }
+            if (line.startsWith('data:')) {
+              const data = line.substring(5);
+              if (data) {
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                  )
+                );
               }
             }
           }
