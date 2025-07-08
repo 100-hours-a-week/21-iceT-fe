@@ -154,6 +154,15 @@ const MorePage = () => {
               내 게시글
             </button>
           </div>
+          <div className="space-y-2">
+            {/* 문제 리스트 */}
+            <button
+              onClick={() => navigate('/chat-sessions')}
+              className="w-full bg-surface py-3 text-left px-4 hover:bg-gray-50 transition-colors"
+            >
+              챗봇 대화 내역 조회
+            </button>
+          </div>
         </div>
       </div>
       <DeleteConfirmModal

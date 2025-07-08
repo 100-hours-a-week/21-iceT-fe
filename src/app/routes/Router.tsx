@@ -18,6 +18,7 @@ import EditPostPage from '@/pages/EditPostPage';
 import MyPostPage from '@/pages/MyPostsPage';
 import CreateChatbotPage from '@/pages/CreateChatbotPage';
 import ChattingPage from '@/pages/ChattingPage';
+import SessionPage from '@/pages/SessionPage';
 
 const SurveyPage = React.lazy(() => import('@/pages/SurveyPage'));
 const ProblemListPage = React.lazy(() => import('@/pages/ProblemListPage'));
@@ -50,6 +51,8 @@ const Router = () => {
                 <Route path="/post/:id/edit" element={<EditPostPage />} />
                 <Route path="/my-posts" element={<MyPostPage />} />
                 <Route path="/new-chat" element={<CreateChatbotPage />} />
+                <Route path="/chatbot" element={<ChattingPage />} />
+                <Route path="/chat-sessions" element={<SessionPage />} />
                 <Route path="/chatbot/:id" element={<ChattingPage />} />
               </Route>
             </Route>
