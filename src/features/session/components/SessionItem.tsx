@@ -3,6 +3,7 @@ import { ChatSession } from '../types/chatSession';
 import feedbackIc from '@/assets/feedbackIc.svg';
 import interviewIc from '@/assets/interviewIc.svg';
 import { useNavigate } from 'react-router-dom';
+import { memo } from 'react';
 
 interface ISessionItemProps {
   session: ChatSession;
@@ -53,4 +54,4 @@ const SessionItem = ({ session, isSelected, onSelect, isSelectionMode }: ISessio
   );
 };
 
-export default SessionItem;
+export default memo(SessionItem);
