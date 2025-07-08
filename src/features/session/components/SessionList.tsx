@@ -13,9 +13,10 @@ interface ISessionItemProps {
 
 const SessionItem = ({ session, isSelected, onSelect, isSelectionMode }: ISessionItemProps) => {
   const navigate = useNavigate();
-
   const handleNavigateChattingRoom = () => {
-    navigate(`/chatbot/${session.sessionId}`);
+    if (!isSelectionMode) {
+      navigate(`/chatbot/${session.sessionId}`);
+    }
   };
 
   return (
