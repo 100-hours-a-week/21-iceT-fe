@@ -4,6 +4,7 @@ import useGetSessionList from '@/features/session/hooks/useGetSessionList';
 import { convertDeleteString } from '@/features/session/utils/convertDeleteString';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import useModal from '@/shared/hooks/useModal';
+import BottomNav from '@/shared/layout/BottomNav';
 import PageHeader from '@/shared/layout/PageHeader';
 import ConfirmModal from '@/shared/ui/ConfirmModal';
 import { useState } from 'react';

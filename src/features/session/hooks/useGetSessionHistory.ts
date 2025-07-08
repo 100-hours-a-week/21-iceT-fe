@@ -1,0 +1,20 @@
+import { useQuery } from '@tanstack/react-query';
+import getSessionHistory from '../api/getSessionHistory';
+
+/**
+ * 대화 이력 조회에서 채팅방으로 이동할 때 history를 얻기 위한 훅
+ * @param sessionId
+ * @returns
+ */
+const useGetSessionHistory = (sessionId: number) => {
+  return useQuery({
+    queryKey: ['session', sessionId],
+    queryFn: () => getSessionHistory(sessionId),
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 3,
+    enabled: !!sessionId,
+    refetchOnMount: true,
+  });
+};
+
+export default useGetSessionHistory;
