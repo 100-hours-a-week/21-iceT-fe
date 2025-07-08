@@ -1,10 +1,9 @@
-import SessionItem from '@/features/session/components/SessionList';
+import SessionItem from '@/features/session/components/SessionItem';
 import useDeleteSession from '@/features/session/hooks/useDeleteSession';
 import useGetSessionList from '@/features/session/hooks/useGetSessionList';
 import { convertDeleteString } from '@/features/session/utils/convertDeleteString';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import useModal from '@/shared/hooks/useModal';
-import BottomNav from '@/shared/layout/BottomNav';
 import PageHeader from '@/shared/layout/PageHeader';
 import ConfirmModal from '@/shared/ui/ConfirmModal';
 import { useState } from 'react';
@@ -55,14 +54,11 @@ const SessionPage = () => {
     try {
       const ids = convertDeleteString(selectedSessions);
       await deleteSessionMutation.mutate(ids);
-      console.log(ids);
     } catch {
       alert('삭제에 실패하였습니다.');
     }
 
     handleModalOpen(false);
-    // api 호출
-
     // 삭제 완료
     setSelectedSessions(new Set());
     setIsSelectionMode(false);

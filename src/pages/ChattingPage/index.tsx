@@ -5,20 +5,35 @@ import BottomNav from '@/shared/layout/BottomNav';
 import PageHeader from '@/shared/layout/PageHeader';
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-
 import MDEditor from '@uiw/react-md-editor';
+import useGetSessionHistory from '@/features/session/hooks/useGetSessionHistory';
 
 // 메시지 타입 정의
 interface IMessage {
   id: number;
-  type: 'user' | 'bot' | 'system';
+  type: string;
   content: string;
 }
 
+// 세션 히스토리 데이터 타입 정의
+type SessionHistoryRecord = {
+  role: string;
+  content: string;
+  createdAt: string;
+};
+
+type SessionHistoryData = {
+  sessionId: string;
+  title: string;
+  date: string;
+  type: string;
+  records: SessionHistoryRecord[];
+};
 // location.state 타입 정의
 interface ILocationState {
   mode?: string;
   code?: string;
+  session?: boolean;
 }
 
 const ChattingPage = () => {
@@ -34,7 +49,11 @@ const ChattingPage = () => {
   // URL 파라미터와 location state 가져오기
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
-  const { mode, code } = (location.state as ILocationState) || {};
+  const { mode, code, session } = (location.state as ILocationState) || {};
+  const sessionId = Number(id); // id는 useParams로부터 항상 있음
+  const shouldFetch = Boolean(session && !isNaN(sessionId));
+  const { data: sessionHistoryList } = useGetSessionHistory(sessionId, shouldFetch);
+  console.log(sessionHistoryList);
 
   // 고유 ID 생성 함수
   const generateMessageId = () => {
@@ -73,7 +92,7 @@ const ChattingPage = () => {
       const botMessageId = generateMessageId();
       const botMessage: IMessage = {
         id: botMessageId,
-        type: 'bot',
+        type: 'assistant',
         content: '',
       };
 
@@ -136,7 +155,7 @@ const ChattingPage = () => {
         ...prev,
         {
           id: errorBotMessageId,
-          type: 'bot',
+          type: 'system',
           content: '세션 시작 중 오류가 발생했습니다.',
         },
       ]);
@@ -152,7 +171,7 @@ const ChattingPage = () => {
       const botMessageId = generateMessageId();
       const botMessage: IMessage = {
         id: botMessageId,
-        type: 'bot',
+        type: 'assistant',
         content: '',
       };
 
@@ -218,35 +237,65 @@ const ChattingPage = () => {
     }
   };
 
-  // 페이지 로드 시 세션 시작
   useEffect(() => {
-    const startSession = async () => {
-      if (id && !isSessionInitialized) {
-        try {
-          // sessionId를 number로 변환하고 유효성 검사
-          const sessionId = Number(id);
-          if (isNaN(sessionId)) {
-            console.error('Invalid sessionId: must be a number');
+    const initializeChat = async () => {
+      if (!id || isSessionInitialized) return;
+
+      const sessionId = Number(id);
+      if (isNaN(sessionId)) {
+        console.error('Invalid sessionId: must be a number');
+        navigate('/new-chat');
+
+        return;
+      }
+
+      try {
+        if (session) {
+          // 세션 히스토리에서 온 경우 - 히스토리 데이터 로드 대기
+          // sessionHistoryList 데이터가 로드될 때까지 기다림
+          console.log('Waiting for session history data...');
+        } else {
+          // 새로운 세션 시작
+          if (!code) {
+            alert('잘못된 경로입니다');
+            navigate('/new-chat');
 
             return;
           }
-
-          // 세션 시작 및 스트리밍 처리
           await handleStartSessionStreaming(sessionId, code);
           setIsSessionInitialized(true);
-        } catch (error) {
-          console.error('Failed to start session:', error);
         }
-      } else if (!id) {
-        alert('잘못된 경로입니다');
+      } catch (error) {
+        console.error('Failed to initialize chat:', error);
         navigate('/new-chat');
       }
     };
 
-    startSession();
-  }, [id, code, isSessionInitialized]);
+    initializeChat();
+  }, [id, session, isSessionInitialized, code]);
 
-  // 메시지 전송
+  // 세션 히스토리 데이터가 로드되면 메시지로 변환
+  useEffect(() => {
+    if (session && sessionHistoryList && !isSessionInitialized) {
+      console.log('Loading session history:', sessionHistoryList);
+
+      // 히스토리 데이터를 메시지로 변환
+      const historyMessages = convertHistoryToMessages(sessionHistoryList);
+
+      if (historyMessages.length > 0) {
+        setMessages(historyMessages);
+        console.log('Session history loaded:', historyMessages);
+      } else {
+        // 히스토리가 비어있는 경우
+        setMessages([]);
+        console.log('No history records found');
+      }
+
+      setIsSessionInitialized(true);
+    }
+  }, [session, sessionHistoryList, isSessionInitialized]);
+
+  // 메시지 전송 함수 수정 (세션 히스토리 모드에서도 새 메시지 전송 가능)
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -271,18 +320,9 @@ const ChattingPage = () => {
     const sessionIdNumber = Number(id);
     if (isNaN(sessionIdNumber)) return;
 
-    // followup 스트리밍 응답 처리
+    // followup 스트리밍 응답 처리 (세션 히스토리 모드에서도 동일)
     await handleFollowupStreaming(messageToSend, sessionIdNumber);
   };
-
-  // 컴포넌트 언마운트 시 EventSource 정리
-  useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -339,6 +379,19 @@ const ChattingPage = () => {
     }
   };
 
+  // 세션 히스토리를 IMessage 배열로 변환하는 함수
+  const convertHistoryToMessages = (historyData: SessionHistoryData): IMessage[] => {
+    if (!historyData || !historyData.records || historyData.records.length === 0) {
+      return [];
+    }
+
+    return historyData.records.map(record => ({
+      id: generateMessageId(),
+      type: record.role, // 'user' 또는 'assistant' 그대로 사용
+      content: record.content,
+    }));
+  };
+
   return (
     <div className="bg-background min-h-screen flex flex-col">
       {/* 헤더 */}
@@ -377,7 +430,7 @@ const ChattingPage = () => {
               </div>
             )}
 
-            {message.type === 'bot' && (
+            {message.type === 'assistant' && (
               <div className="max-w-4xl w-full">
                 <div data-color-mode="light">
                   <MDEditor.Markdown

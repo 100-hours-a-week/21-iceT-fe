@@ -15,7 +15,7 @@ const SessionItem = ({ session, isSelected, onSelect, isSelectionMode }: ISessio
   const navigate = useNavigate();
   const handleNavigateChattingRoom = () => {
     if (!isSelectionMode) {
-      navigate(`/chatbot/${session.sessionId}`);
+      navigate(`/chatbot/${session.sessionId}`, { state: { session: true } });
     }
   };
 
