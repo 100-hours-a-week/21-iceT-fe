@@ -6,7 +6,7 @@ import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import useModal from '@/shared/hooks/useModal';
 import PageHeader from '@/shared/layout/PageHeader';
 import ConfirmModal from '@/shared/ui/ConfirmModal';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 const SessionPage = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -30,15 +30,18 @@ const SessionPage = () => {
   const allSessions = SessionListData?.pages?.flatMap(page => page.chatSessions) || [];
 
   // 단일 선택
-  const handleSelectSession = (sessionId: number) => {
-    const newSelected = new Set(selectedSessions);
-    if (newSelected.has(sessionId)) {
-      newSelected.delete(sessionId);
-    } else {
-      newSelected.add(sessionId);
-    }
-    setSelectedSessions(newSelected);
-  };
+  const handleSelectSession = useCallback((sessionId: number) => {
+    setSelectedSessions(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(sessionId)) {
+        newSelected.delete(sessionId);
+      } else {
+        newSelected.add(sessionId);
+      }
+
+      return newSelected;
+    });
+  }, []);
 
   // 전체 선택
   const handleSelectAll = () => {
