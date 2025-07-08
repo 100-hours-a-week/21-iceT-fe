@@ -2,6 +2,7 @@ import { formatDate } from '@/utils/formatDate';
 import { ChatSession } from '../types/chatSession';
 import feedbackIc from '@/assets/feedbackIc.svg';
 import interviewIc from '@/assets/interviewIc.svg';
+import { useNavigate } from 'react-router-dom';
 
 interface ISessionItemProps {
   session: ChatSession;
@@ -11,8 +12,17 @@ interface ISessionItemProps {
 }
 
 const SessionItem = ({ session, isSelected, onSelect, isSelectionMode }: ISessionItemProps) => {
+  const navigate = useNavigate();
+
+  const handleNavigateChattingRoom = () => {
+    navigate(`/chatbot/${session.sessionId}`);
+  };
+
   return (
-    <div className="flex items-center justify-between py-3 px-4 bg-white border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+    <div
+      onClick={handleNavigateChattingRoom}
+      className="flex items-center justify-between py-3 px-4 bg-white border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+    >
       <div className="flex items-center gap-3 flex-1">
         {isSelectionMode && (
           <div className="flex-shrink-0">
