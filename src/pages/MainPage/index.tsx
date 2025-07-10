@@ -17,8 +17,7 @@ const MainPage = () => {
   const { data: userStudyStatData, isLoading: isUserStudyStatLoading } = useUserStats();
   const today = new Date().toISOString().split('T')[0];
   const { data: todayProblemData, isLoading: isTodayProblemLoading } = useProblemSet(today);
-  const { data: recommendedProblemData, isLoading: isRecommendedProblemLoading } =
-    useGetRecommendedProblem(today);
+  const { data: recommendedProblemData } = useGetRecommendedProblem(today);
 
   const handleOpenGame = () => {
     window.open('/game/index.html', '_blank');
