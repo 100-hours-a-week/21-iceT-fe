@@ -52,6 +52,14 @@ const SessionPage = () => {
     }
   };
 
+  // const handleSelectAll = useCallback(() => {
+  //   if (selectedSessions.size === allSessions.length) {
+  //     setSelectedSessions(new Set());
+  //   } else {
+  //     setSelectedSessions(new Set(allSessions.map(s => s.sessionId)));
+  //   }
+  // }, [selectedSessions, allSessions]); // 의존성 배열 추가
+
   // 삭제
   const handleDeleteSelected = async () => {
     try {

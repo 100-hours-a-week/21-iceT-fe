@@ -9,13 +9,16 @@ import { useAuth } from '@/app/providers/AuthContext';
 import { useUserStats } from '@/features/user/hooks/useUserStats';
 import { useProblemSet } from '@/features/problemSet/hooks/useProblemSet';
 import ChunsikCard from './components/ChunsikCard';
+import useGetRecommendedProblem from '@/features/problemSet/hooks/useGetRecommededProblem';
 
 const MainPage = () => {
+  const today = new Date().toISOString().split('T')[0];
+
   const { logoutUserContext } = useAuth();
   const { data: userProfileData, isLoading: isUserProfileLoading } = useUserProfile();
   const { data: userStudyStatData, isLoading: isUserStudyStatLoading } = useUserStats();
-  const today = new Date().toISOString().split('T')[0];
   const { data: todayProblemData, isLoading: isTodayProblemLoading } = useProblemSet(today);
+  const { data: recommendedProblemData } = useGetRecommendedProblem(today);
 
   const handleOpenGame = () => {
     window.open('/game/index.html', '_blank');
@@ -80,6 +83,31 @@ const MainPage = () => {
             ))
           ) : (
             <p className="text-sm text-gray-500">오늘 출제된 문제가 없습니다.</p>
+          )}
+        </div>
+        {/* ✅ AI 추천 문제 */}
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">추천 문제</h2>
+          <p>
+            AI가 {userProfileData.nickname ? userProfileData.nickname + '님에게 필요한' : ''} 문제를
+            추천해드려요
+          </p>
+          {Array.isArray(recommendedProblemData?.problems) &&
+          recommendedProblemData.problems.length > 0 ? (
+            recommendedProblemData.problems.map(problem => (
+              <ProblemItem
+                key={problem.problemNumber}
+                onClick={() => {
+                  const url = `https://www.acmicpc.net/problem/${problem.problemNumber}`;
+                  window.open(url, '_blank');
+                }}
+                problemNumber={problem.problemNumber}
+                title={problem.title}
+                tier={problem.tier}
+              />
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">추천 문제가 없습니다.</p>
           )}
         </div>
 

@@ -11,6 +11,7 @@ export const queryKeys = {
     set: (date: string) => [...queryKeys.problems.all, 'set', date] as const,
     solution: (problemNumber: number) =>
       [...queryKeys.problems.all, 'solution', problemNumber] as const,
+    aiRecommended: (date: string) => [...queryKeys.problems.all, 'ai', date] as const,
   },
 
   auth: {
