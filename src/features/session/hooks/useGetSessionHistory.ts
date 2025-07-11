@@ -10,8 +10,8 @@ const useGetSessionHistory = (sessionId: number, session: boolean) => {
   return useQuery({
     queryKey: ['session', sessionId],
     queryFn: () => getSessionHistory(sessionId),
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 60 * 3,
+    staleTime: 0,
+    gcTime: 0,
     enabled: session && !!sessionId,
     refetchOnMount: true,
   });

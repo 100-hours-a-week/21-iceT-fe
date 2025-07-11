@@ -12,10 +12,11 @@ import ChunsikCard from './components/ChunsikCard';
 import useGetRecommendedProblem from '@/features/problemSet/hooks/useGetRecommededProblem';
 
 const MainPage = () => {
+  const today = new Date().toISOString().split('T')[0];
+
   const { logoutUserContext } = useAuth();
   const { data: userProfileData, isLoading: isUserProfileLoading } = useUserProfile();
   const { data: userStudyStatData, isLoading: isUserStudyStatLoading } = useUserStats();
-  const today = new Date().toISOString().split('T')[0];
   const { data: todayProblemData, isLoading: isTodayProblemLoading } = useProblemSet(today);
   const { data: recommendedProblemData } = useGetRecommendedProblem(today);
 

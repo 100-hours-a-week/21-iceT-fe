@@ -53,7 +53,6 @@ const ChattingPage = () => {
   const sessionId = Number(id); // id는 useParams로부터 항상 있음
   const shouldFetch = Boolean(session && !isNaN(sessionId));
   const { data: sessionHistoryList } = useGetSessionHistory(sessionId, shouldFetch);
-  console.log(sessionHistoryList);
 
   // 고유 ID 생성 함수
   const generateMessageId = () => {
@@ -130,17 +129,20 @@ const ChattingPage = () => {
 
           for (const line of lines) {
             if (line.startsWith('event:message')) {
-              continue;
+              continue; // event 타입 확인
             }
             if (line.startsWith('data:')) {
-              const data = line.substring(5).trim();
-              if (data) {
-                setMessages(prev =>
-                  prev.map(msg =>
-                    msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                  )
-                );
+              let data = line.substring(5);
+              if (data === '\\n') {
+                data = '  \n'; // 마크다운 줄바꿈
               }
+
+              // 모든 데이터(공백 포함) 추가
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                )
+              );
             }
           }
         }
@@ -211,22 +213,25 @@ const ChattingPage = () => {
           }
 
           const chunk = decoder.decode(value, { stream: true });
-
           const lines = chunk.split('\n');
+          console.log(lines);
 
           for (const line of lines) {
             if (line.startsWith('event:message')) {
               continue; // event 타입 확인
             }
             if (line.startsWith('data:')) {
-              const data = line.substring(5);
-              if (data) {
-                setMessages(prev =>
-                  prev.map(msg =>
-                    msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                  )
-                );
+              let data = line.substring(5);
+              if (data === '\\n') {
+                data = '  \n'; // 마크다운 줄바꿈
               }
+
+              // 모든 데이터(공백 포함) 추가
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
+                )
+              );
             }
           }
         }
@@ -434,7 +439,7 @@ const ChattingPage = () => {
               <div className="max-w-4xl w-full">
                 <div data-color-mode="light">
                   <MDEditor.Markdown
-                    source={message.content.replace(/^"|"$/g, '') || ''}
+                    source={message.content}
                     style={{
                       backgroundColor: 'transparent',
                       fontSize: '14px',
