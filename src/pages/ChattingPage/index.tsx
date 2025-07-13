@@ -126,6 +126,7 @@ const ChattingPage = () => {
 
           const chunk = decoder.decode(value, { stream: true });
           const lines = chunk.split('\n');
+          console.log(lines);
 
           for (const line of lines) {
             if (line.startsWith('event:message')) {
@@ -393,7 +394,10 @@ const ChattingPage = () => {
     return historyData.records.map(record => ({
       id: generateMessageId(),
       type: record.role, // 'user' 또는 'assistant' 그대로 사용
-      content: record.content,
+      content:
+        record.role === 'assistant'
+          ? record.content.replace(/\\n/g, '  \n') // assistant 메시지의 경우 마크다운 줄바꿈으로 변환
+          : record.content, // user 메시지는 그대로
     }));
   };
 
