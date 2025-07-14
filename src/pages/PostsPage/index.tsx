@@ -9,12 +9,14 @@ import AlgorithmDropdown from '@/shared/ui/AlgorithmDropdown';
 import useAlgorithmDropdown from '@/shared/hooks/useAlgorithmDropdown';
 import useGetPostList from '@/features/post/hooks/useGetPostList';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
-import { useMemo, useState } from 'react';
-import { convertKoreanToEnglish } from '@/utils/doMappingCategories';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { convertKoreanToEnglish } from '@/shared/utils/doMappingCategories';
 import useGetHotPost from '@/features/post/hooks/useGetHotPost';
+import { useNavigate } from 'react-router-dom';
 
 const PostsPage = () => {
   const [appliedKeyword, setAppliedKeyword] = useState('');
+  const navigate = useNavigate();
   const { onChange, value: searchValue, reset: resetInputValue } = useInput();
   const { selectedAlgorithmTypes, handleToggleAlgorithmType, handleClearAllTypes } =
     useAlgorithmDropdown();
@@ -41,14 +43,74 @@ const PostsPage = () => {
     fetchNextPage,
   });
 
-  // 검색 처리 & input 값 초기화
+  // 검색 시 스크롤 초기화
   const handleSearch = () => {
+    sessionStorage.removeItem('scrollY');
+    sessionStorage.removeItem('postPageCount');
     setAppliedKeyword(searchValue.trim());
     resetInputValue();
   };
 
+  const onClickPost = (id: number) => {
+    sessionStorage.setItem('scrollY', String(window.scrollY));
+    sessionStorage.setItem('postPageCount', String(PostListData?.pages.length ?? 1));
+    sessionStorage.setItem('appliedKeyword', appliedKeyword);
+    sessionStorage.setItem('selectedAlgorithmTypes', JSON.stringify(selectedAlgorithmTypes));
+    navigate(`/post/${id}`);
+  };
+
   // 모든 페이지의 게시글을 하나의 배열로 합치기
   const allPosts = PostListData?.pages?.flatMap(page => page.posts) || [];
+
+  const [pagesLoaded, setPagesLoaded] = useState(1);
+  const isRestoring = useRef(true);
+  const savedPageCount = Number(sessionStorage.getItem('postPageCount') || '1');
+  const savedScrollY = Number(sessionStorage.getItem('scrollY') || '0');
+  const scrollRestored = useRef(false);
+
+  useEffect(() => {
+    if (!PostListData || !isRestoring.current) return;
+
+    if (pagesLoaded < savedPageCount && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage().then(() => {
+        setPagesLoaded(prev => prev + 1);
+      });
+    } else if (pagesLoaded >= savedPageCount && !scrollRestored.current) {
+      scrollRestored.current = true;
+      window.scrollTo(0, savedScrollY);
+      isRestoring.current = false;
+    }
+  }, [
+    pagesLoaded,
+    savedPageCount,
+    savedScrollY,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    PostListData,
+  ]);
+
+  useEffect(() => {
+    const savedKeyword = sessionStorage.getItem('appliedKeyword');
+    const savedTypes = sessionStorage.getItem('selectedAlgorithmTypes');
+
+    if (savedKeyword) {
+      setAppliedKeyword(savedKeyword);
+    }
+
+    if (savedTypes) {
+      try {
+        const parsedTypes = JSON.parse(savedTypes);
+        if (Array.isArray(parsedTypes)) {
+          // 커스텀 훅에 setter 함수 없으면 상태를 초기화하는 함수 만들기
+          handleClearAllTypes(); // 기존 선택 초기화
+          parsedTypes.forEach((type: string) => handleToggleAlgorithmType(type));
+        }
+      } catch (e) {
+        console.error('선택된 알고리즘 타입 복원 실패:', e);
+      }
+    }
+  }, []);
 
   return (
     <div className="bg-background min-h-screen relative pb-20">
@@ -77,11 +139,11 @@ const PostsPage = () => {
             if (allPosts.length === index + 1) {
               return (
                 <div key={post.postId} ref={lastCommentRef}>
-                  <PostItem post={post} />
+                  <PostItem post={post} onClickPost={onClickPost} />
                 </div>
               );
             } else {
-              return <PostItem key={post.postId} post={post} />;
+              return <PostItem key={post.postId} post={post} onClickPost={onClickPost} />;
             }
           })
         : !isPostsLoading && <p className="text-center py-8">게시글이 없습니다.</p>}
