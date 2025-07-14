@@ -54,6 +54,8 @@ const PostsPage = () => {
   const onClickPost = (id: number) => {
     sessionStorage.setItem('scrollY', String(window.scrollY));
     sessionStorage.setItem('postPageCount', String(PostListData?.pages.length ?? 1));
+    sessionStorage.setItem('appliedKeyword', appliedKeyword);
+    sessionStorage.setItem('selectedAlgorithmTypes', JSON.stringify(selectedAlgorithmTypes));
     navigate(`/post/${id}`);
   };
 
@@ -87,6 +89,28 @@ const PostsPage = () => {
     isFetchingNextPage,
     PostListData,
   ]);
+
+  useEffect(() => {
+    const savedKeyword = sessionStorage.getItem('appliedKeyword');
+    const savedTypes = sessionStorage.getItem('selectedAlgorithmTypes');
+
+    if (savedKeyword) {
+      setAppliedKeyword(savedKeyword);
+    }
+
+    if (savedTypes) {
+      try {
+        const parsedTypes = JSON.parse(savedTypes);
+        if (Array.isArray(parsedTypes)) {
+          // 커스텀 훅에 setter 함수 없으면 상태를 초기화하는 함수 만들기
+          handleClearAllTypes(); // 기존 선택 초기화
+          parsedTypes.forEach((type: string) => handleToggleAlgorithmType(type));
+        }
+      } catch (e) {
+        console.error('선택된 알고리즘 타입 복원 실패:', e);
+      }
+    }
+  }, []);
 
   return (
     <div className="bg-background min-h-screen relative pb-20">
