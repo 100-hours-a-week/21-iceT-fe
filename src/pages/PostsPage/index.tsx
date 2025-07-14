@@ -9,12 +9,14 @@ import AlgorithmDropdown from '@/shared/ui/AlgorithmDropdown';
 import useAlgorithmDropdown from '@/shared/hooks/useAlgorithmDropdown';
 import useGetPostList from '@/features/post/hooks/useGetPostList';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { convertKoreanToEnglish } from '@/shared/utils/doMappingCategories';
 import useGetHotPost from '@/features/post/hooks/useGetHotPost';
+import { useNavigate } from 'react-router-dom';
 
 const PostsPage = () => {
   const [appliedKeyword, setAppliedKeyword] = useState('');
+  const navigate = useNavigate();
   const { onChange, value: searchValue, reset: resetInputValue } = useInput();
   const { selectedAlgorithmTypes, handleToggleAlgorithmType, handleClearAllTypes } =
     useAlgorithmDropdown();
@@ -47,8 +49,39 @@ const PostsPage = () => {
     resetInputValue();
   };
 
+  const onClickPost = (id: number) => {
+    sessionStorage.setItem('scrollY', String(window.scrollY));
+    sessionStorage.setItem('postPageCount', String(PostListData?.pages.length ?? 1));
+    navigate(`/post/${id}`);
+  };
+
   // 모든 페이지의 게시글을 하나의 배열로 합치기
   const allPosts = PostListData?.pages?.flatMap(page => page.posts) || [];
+
+  // 게시글 상세에서 뒤로가기 후 게시글 목록 진입 시 자동 로드
+  useEffect(() => {
+    const savedPage = Number(sessionStorage.getItem('postPageCount') || '1');
+    const savedY = Number(sessionStorage.getItem('scrollY') || '0');
+
+    if (!PostListData?.pages) return;
+
+    if (
+      !isFetchingNextPage &&
+      !isPostsLoading &&
+      PostListData?.pages.length < savedPage &&
+      hasNextPage
+    ) {
+      fetchNextPage();
+    }
+
+    if (PostListData?.pages.length >= savedPage) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, savedY);
+      });
+      sessionStorage.removeItem('scrollY');
+      sessionStorage.removeItem('postPageCount');
+    }
+  }, [PostListData, isFetchingNextPage, isPostsLoading]);
 
   return (
     <div className="bg-background min-h-screen relative pb-20">
@@ -77,11 +110,11 @@ const PostsPage = () => {
             if (allPosts.length === index + 1) {
               return (
                 <div key={post.postId} ref={lastCommentRef}>
-                  <PostItem post={post} />
+                  <PostItem post={post} onClickPost={onClickPost} />
                 </div>
               );
             } else {
-              return <PostItem key={post.postId} post={post} />;
+              return <PostItem key={post.postId} post={post} onClickPost={onClickPost} />;
             }
           })
         : !isPostsLoading && <p className="text-center py-8">게시글이 없습니다.</p>}
