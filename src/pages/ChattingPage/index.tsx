@@ -396,7 +396,7 @@ const ChattingPage = () => {
       type: record.role, // 'user' 또는 'assistant' 그대로 사용
       content:
         record.role === 'assistant'
-          ? record.content.replace(/\\n/g, '  \n') // assistant 메시지의 경우 마크다운 줄바꿈으로 변환
+          ? record.content.replace(/\\n/g, '\n') // assistant 메시지의 경우 마크다운 줄바꿈으로 변환
           : record.content, // user 메시지는 그대로
     }));
   };
