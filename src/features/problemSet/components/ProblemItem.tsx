@@ -1,6 +1,6 @@
 import { formatBaekjoonTier } from '@/features/problemSet/utils/convertTier';
-import { getTierColor } from '@/utils/getTierColor';
-import { getTierRank } from '@/utils/getTierRank';
+import { getTierColor } from '@/shared/utils/getTierColor';
+import { getTierRank } from '@/shared/utils/getTierRank';
 
 interface IProblemItemProps {
   problemNumber: number;

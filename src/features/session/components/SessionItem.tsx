@@ -1,4 +1,4 @@
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/shared/utils/formatDate';
 import { ChatSession } from '../types/chatSession';
 import feedbackIc from '@/assets/feedbackIc.svg';
 import interviewIc from '@/assets/interviewIc.svg';

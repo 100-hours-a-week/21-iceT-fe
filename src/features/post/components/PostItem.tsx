@@ -1,8 +1,7 @@
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/shared//utils/formatDate';
 import { useNavigate } from 'react-router-dom';
-import { convertEnglishCategoryToKorean } from '@/utils/doMappingCategories';
+import { convertEnglishCategoryToKorean } from '@/shared/utils/doMappingCategories';
 import { Post } from '../types/post';
-
 interface IPostItemProps {
   post: Post;
 }

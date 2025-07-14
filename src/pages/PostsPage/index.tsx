@@ -10,7 +10,7 @@ import useAlgorithmDropdown from '@/shared/hooks/useAlgorithmDropdown';
 import useGetPostList from '@/features/post/hooks/useGetPostList';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useMemo, useState } from 'react';
-import { convertKoreanToEnglish } from '@/utils/doMappingCategories';
+import { convertKoreanToEnglish } from '@/shared/utils/doMappingCategories';
 import useGetHotPost from '@/features/post/hooks/useGetHotPost';
 
 const PostsPage = () => {
@@ -41,7 +41,7 @@ const PostsPage = () => {
     fetchNextPage,
   });
 
-  // 검색 처리 & input 값 초기화
+  // 검색 시 스크롤 초기화
   const handleSearch = () => {
     setAppliedKeyword(searchValue.trim());
     resetInputValue();

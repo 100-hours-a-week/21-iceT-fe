@@ -1,4 +1,4 @@
-import { convertEnglishCategoryToKorean } from '@/utils/doMappingCategories';
+import { convertEnglishCategoryToKorean } from '@/shared/utils/doMappingCategories';
 
 interface ICategoryBox {
   name: string;

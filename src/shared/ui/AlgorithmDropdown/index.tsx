@@ -1,6 +1,6 @@
 // src/shared/ui/AlgorithmDropdown/index.tsx
 
-import { KOREAN_ALGORITHM_CATEGORIES } from '@/utils/doMappingCategories';
+import { KOREAN_ALGORITHM_CATEGORIES } from '@/shared/utils/doMappingCategories';
 import { useState, useRef, useEffect } from 'react';
 
 interface IAlgorithmDropdownProps {

@@ -1,6 +1,6 @@
 import useModal from '@/shared/hooks/useModal';
 import ConfirmModal from '@/shared/ui/ConfirmModal';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/shared/utils/formatDate';
 import { useState } from 'react';
 import useDeleteComment from '../hooks/useDeleteComment';
 import { useQueryClient } from '@tanstack/react-query';

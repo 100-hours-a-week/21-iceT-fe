@@ -5,10 +5,10 @@ import useSubmitButton from '@/shared/hooks/useSubmitButton';
 import AlgorithmDropdown from '@/shared/ui/AlgorithmDropdown';
 import Button from '@/shared/ui/Button';
 import Input from '@/shared/ui/Input';
-import { convertKoreanToEnglish } from '@/utils/doMappingCategories';
+import { convertKoreanToEnglish } from '@/shared/utils/doMappingCategories';
 import MDEditor from '@uiw/react-md-editor';
 import { useMemo, useState } from 'react';
-import { convertEnglishToKorean } from '@/utils/doMappingCategories';
+import { convertEnglishToKorean } from '@/shared/utils/doMappingCategories';
 import { Category } from '../types/Category';
 import Helpertext from '@/shared/ui/Helpertext';
 

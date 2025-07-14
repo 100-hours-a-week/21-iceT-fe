@@ -4,7 +4,7 @@ import LoginPage from '@/pages/LoginPage';
 import FirstLoginPage from '@/pages/FirstLoginPage';
 import MainPage from '@/pages/MainPage';
 import KakaoCallback from '@/pages/KakaoCallbackPage';
-import GoogleAnalytics from '@/utils/GoogleAnalytics';
+import GoogleAnalytics from '@/shared/utils/GoogleAnalytics';
 import React, { Suspense } from 'react';
 import Spinner from '@/shared/ui/Spinner';
 import { AuthProtectedRoute } from './AuthProtectedRoute';
