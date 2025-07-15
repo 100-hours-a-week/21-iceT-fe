@@ -7,28 +7,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import MDEditor from '@uiw/react-md-editor';
 import useGetSessionHistory from '@/features/session/hooks/useGetSessionHistory';
+import { IMessage } from '@/features/comment/types/message';
+import { handleSSEStream } from '@/features/chatbot/utils/handleSSEstream';
 
-// 메시지 타입 정의
-interface IMessage {
-  id: number;
-  type: string;
-  content: string;
-}
-
-// 세션 히스토리 데이터 타입 정의
-type SessionHistoryRecord = {
-  role: string;
-  content: string;
-  createdAt: string;
-};
-
-type SessionHistoryData = {
-  sessionId: string;
-  title: string;
-  date: string;
-  type: string;
-  records: SessionHistoryRecord[];
-};
 // location.state 타입 정의
 interface ILocationState {
   mode?: string;
@@ -112,42 +93,8 @@ const ChattingPage = () => {
         throw new Error('Failed to start session');
       }
 
-      // SSE 응답 처리 - 응답 본문에서 스트리밍 URL 추출하거나 직접 처리
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            setIsLoading(false);
-            break;
-          }
-
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          console.log(lines);
-
-          for (const line of lines) {
-            if (line.startsWith('event:message')) {
-              continue; // event 타입 확인
-            }
-            if (line.startsWith('data:')) {
-              let data = line.substring(5);
-              if (data === '\\n') {
-                data = '  \n'; // 마크다운 줄바꿈
-              }
-
-              // 모든 데이터(공백 포함) 추가
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                )
-              );
-            }
-          }
-        }
-      }
+      // SSE 응답 처리
+      handleSSEStream({ response, botMessageId, setMessages, setIsLoading });
     } catch (error) {
       console.error('Failed to handle start session streaming:', error);
       setIsLoading(false);
@@ -201,42 +148,7 @@ const ChattingPage = () => {
       }
 
       // SSE 응답 처리
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            setIsLoading(false);
-            break;
-          }
-
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          console.log(lines);
-
-          for (const line of lines) {
-            if (line.startsWith('event:message')) {
-              continue; // event 타입 확인
-            }
-            if (line.startsWith('data:')) {
-              let data = line.substring(5);
-              if (data === '\\n') {
-                data = '  \n'; // 마크다운 줄바꿈
-              }
-
-              // 모든 데이터(공백 포함) 추가
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === botMessageId ? { ...msg, content: msg.content + data } : msg
-                )
-              );
-            }
-          }
-        }
-      }
+      handleSSEStream({ response, botMessageId, setMessages, setIsLoading });
     } catch (error) {
       console.error('Failed to handle followup streaming:', error);
       setIsLoading(false);
