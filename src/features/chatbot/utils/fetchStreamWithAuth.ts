@@ -1,9 +1,6 @@
 import { API_BASE_URL, API_SUB_URLS } from '@/constants/apiConfig';
-import { useNavigate } from 'react-router-dom';
 
 const refreshToken = async (): Promise<boolean> => {
-  const navigate = useNavigate();
-
   try {
     const response = await fetch(`${API_BASE_URL}${API_SUB_URLS}/auth/refresh`, {
       method: 'POST',
@@ -14,13 +11,13 @@ const refreshToken = async (): Promise<boolean> => {
       return true;
     } else {
       // 리프레시 실패 시 로그인 페이지로 리다이렉트
-      navigate('/');
+      window.history.pushState(null, '', '/');
 
       return false;
     }
   } catch (error) {
     console.error('Token refresh failed:', error);
-    navigate('/');
+    window.history.pushState(null, '', '/');
 
     return false;
   }
