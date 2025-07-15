@@ -1,8 +1,8 @@
-import { API_BASE_URL, API_SUB_URLS } from '@/constants/apiConfig';
+import { API_BASE_URL } from '@/constants/apiConfig';
 
 const refreshToken = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_SUB_URLS}/auth/refresh`, {
+    const response = await fetch(`${API_BASE_URL}api/backend/v1/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
     });

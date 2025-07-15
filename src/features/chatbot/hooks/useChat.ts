@@ -4,8 +4,8 @@ import useInput from '@/shared/hooks/useInput';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { fetchStreamWithAuth } from '../utils/fetchStreamWithAuth';
-import { API_BASE_URL, API_SUB_URLS_V2 } from '@/constants/apiConfig';
-import { handleSSEStream } from '../utils/handleSSEstream';
+import { API_BASE_URL } from '@/constants/apiConfig';
+import { handleSSEStream } from '../utils/handleSSEStream';
 import { SessionHistoryData } from '@/features/comment/types/session';
 
 interface ILocationState {
@@ -78,7 +78,7 @@ const useChat = () => {
       setMessages(prev => [...prev, botMessage]);
 
       const response = await fetchStreamWithAuth(
-        `${API_BASE_URL}${API_SUB_URLS_V2}/chat/session/${sessionId}/start`,
+        `${API_BASE_URL}api/backend/v2/chat/session/${sessionId}/start`,
         {
           method: 'POST',
           headers: {
@@ -127,7 +127,7 @@ const useChat = () => {
       setMessages(prev => [...prev, botMessage]);
 
       const response = await fetchStreamWithAuth(
-        `${API_BASE_URL}${API_SUB_URLS_V2}/chat/session/${sessionId}/followup`,
+        `${API_BASE_URL}api/backend/v2/chat/session/${sessionId}/followup`,
         {
           method: 'POST',
           headers: {
