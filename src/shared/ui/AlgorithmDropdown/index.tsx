@@ -1,7 +1,9 @@
 // src/shared/ui/AlgorithmDropdown/index.tsx
 
+import useInput from '@/shared/hooks/useInput';
 import { KOREAN_ALGORITHM_CATEGORIES } from '@/shared/utils/doMappingCategories';
 import { useState, useRef, useEffect } from 'react';
+import Input from '../Input';
 
 interface IAlgorithmDropdownProps {
   selectedTypes: string[];
@@ -16,6 +18,7 @@ const AlgorithmDropdown = ({
 }: IAlgorithmDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { value, onChange, reset } = useInput();
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -69,7 +72,19 @@ const AlgorithmDropdown = ({
         {isOpen && (
           <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
             <div className="p-3">
-              <div className="flex justify-between items-center mb-3">
+              <div className="relative mb-4">
+                <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 focus-within:border-blue-500 transition-colors">
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={onChange}
+                    placeholder="알고리즘 유형 검색"
+                    className=" outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mb-3 mt-3">
                 <span className="text-sm font-medium text-gray-700">알고리즘 유형 선택</span>
                 {selectedTypes.length > 0 && (
                   <button
