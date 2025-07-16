@@ -2,8 +2,9 @@
 
 import useInput from '@/shared/hooks/useInput';
 import { KOREAN_ALGORITHM_CATEGORIES } from '@/shared/utils/doMappingCategories';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Input from '../Input';
+import useDebounce from '@/shared/hooks/useDebounce';
 
 interface IAlgorithmDropdownProps {
   selectedTypes: string[];
@@ -18,7 +19,8 @@ const AlgorithmDropdown = ({
 }: IAlgorithmDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { value, onChange, reset } = useInput();
+  const { value, onChange } = useInput();
+  const debouncedValue = useDebounce(value, 200);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -34,6 +36,17 @@ const AlgorithmDropdown = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // 필터된 알고리즘 목록
+  const filteredAlgorithms = useMemo(() => {
+    if (!debouncedValue.trim()) {
+      return KOREAN_ALGORITHM_CATEGORIES;
+    }
+
+    return KOREAN_ALGORITHM_CATEGORIES.filter(algorithm =>
+      algorithm.toLowerCase().includes(debouncedValue.toLowerCase())
+    );
+  }, [debouncedValue]);
 
   return (
     <div className="flex items-center gap-2 mt-3">
@@ -96,7 +109,7 @@ const AlgorithmDropdown = ({
                 )}
               </div>
               <div className="space-y-1">
-                {KOREAN_ALGORITHM_CATEGORIES.map(type => (
+                {filteredAlgorithms.map(type => (
                   <button
                     key={type}
                     onClick={() => onToggleType(type)}
