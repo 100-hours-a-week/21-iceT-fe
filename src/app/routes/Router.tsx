@@ -11,18 +11,18 @@ import { AuthProtectedRoute } from './AuthProtectedRoute';
 import { AuthProvider } from '../providers/AuthContext';
 import MorePage from '@/pages/MyPage';
 import PostsPage from '@/pages/PostsPage';
-import CreatePostPage from '@/pages/CreatePostPage';
-import PostDetailPage from '@/pages/PostDetailPage';
-import AlarmListPage from '@/pages/AlarmListPage';
-import EditPostPage from '@/pages/EditPostPage';
-import MyPostPage from '@/pages/MyPostsPage';
 import CreateChatbotPage from '@/pages/CreateChatbotPage';
-import ChattingPage from '@/pages/ChattingPage';
-import SessionPage from '@/pages/SessionPage';
 
 const SurveyPage = React.lazy(() => import('@/pages/SurveyPage'));
 const ProblemListPage = React.lazy(() => import('@/pages/ProblemListPage'));
 const ProblemSolutionPage = React.lazy(() => import('@/pages/ProblemSolutionPage'));
+const CreatePostPage = React.lazy(() => import('@/pages/CreatePostPage'));
+const PostDetailPage = React.lazy(() => import('@/pages/PostDetailPage'));
+const AlarmListPage = React.lazy(() => import('@/pages/AlarmListPage'));
+const EditPostPage = React.lazy(() => import('@/pages/EditPostPage'));
+const MyPostPage = React.lazy(() => import('@/pages/MyPostsPage'));
+const ChattingPage = React.lazy(() => import('@/pages/ChattingPage'));
+const SessionPage = React.lazy(() => import('@/pages/SessionPage'));
 
 const Router = () => {
   return (
