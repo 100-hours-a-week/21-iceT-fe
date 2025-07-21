@@ -23,33 +23,28 @@ const LikeWithActions = ({ liked, likeCount, postId }: ILikeWithActionsProps) =>
       setLocalLike(prev => !prev);
       setLocalLikeCount(prev => prev - 1);
       try {
-        deleteLikeMutation.mutateAsync(postId);
+        await deleteLikeMutation.mutateAsync(postId);
       } catch {
-        alert('좋아요 취소 실패');
         setLocalLike(prev => !prev);
         setLocalLikeCount(prev => prev + 1);
-
-        return;
       }
     }
-
     // 좋아요 등록
-    if (!localLike) {
+    else if (!localLike) {
       setIsAnimating(true);
       setLocalLike(prev => !prev);
       setLocalLikeCount(prev => prev + 1);
       try {
         await registerLikeMutation.mutateAsync(postId);
       } catch {
-        alert('좋아요 등록 실패');
         setLocalLike(prev => !prev);
         setLocalLikeCount(prev => prev - 1);
+      } finally {
+        // 애니메이션 종료
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 300);
       }
-
-      // 애니메이션 종료
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 300);
     }
   };
 
@@ -97,6 +92,7 @@ const LikeWithActions = ({ liked, likeCount, postId }: ILikeWithActionsProps) =>
 
         {/* 좋아요 카운트 */}
         <span
+          data-testid="like-count"
           className={`
               font-medium transition-all duration-300 ease-out
               ${isAnimating ? 'scale-105' : ''}
