@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { convertKoreanToEnglish } from '@/shared/utils/doMappingCategories';
 import useGetHotPost from '@/features/post/hooks/useGetHotPost';
 import { useNavigate } from 'react-router-dom';
+import useDebounce from '@/shared/hooks/useDebounce';
 
 const PostsPage = () => {
   const [appliedKeyword, setAppliedKeyword] = useState('');
@@ -21,6 +22,9 @@ const PostsPage = () => {
   const { selectedAlgorithmTypes, handleToggleAlgorithmType, handleClearAllTypes } =
     useAlgorithmDropdown();
   const { data: hotPostData } = useGetHotPost();
+  const [isRealTimeSearch, setIsRealTimeSearch] = useState(false);
+  const debouncedValue = useDebounce(searchValue, 300);
+  const searchKeyword = isRealTimeSearch ? debouncedValue : appliedKeyword;
 
   // 한글 카테고리를 영어로 변환
   const englishCategories = useMemo(() => {
@@ -34,7 +38,7 @@ const PostsPage = () => {
     isFetchingNextPage,
     isLoading: isPostsLoading,
   } = useGetPostList({
-    keyword: appliedKeyword || '',
+    keyword: searchKeyword || '',
     category: englishCategories.length > 0 ? englishCategories : [],
   });
   const lastCommentRef = useInfiniteScroll({
@@ -48,7 +52,18 @@ const PostsPage = () => {
     sessionStorage.removeItem('scrollY');
     sessionStorage.removeItem('postPageCount');
     setAppliedKeyword(searchValue.trim());
+    setIsRealTimeSearch(false);
     resetInputValue();
+  };
+
+  // useInput의 onChange를 래핑
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    onChange(e); // 기존 useInput의 onChange 호출
+    if (e.target.value.trim()) {
+      setIsRealTimeSearch(true); // 입력이 있으면 실시간 검색 활성화
+    } else {
+      setIsRealTimeSearch(false); // 입력이 없으면 실시간 검색 비활성화
+    }
   };
 
   const onClickPost = (id: number) => {
@@ -118,7 +133,7 @@ const PostsPage = () => {
       <SearchInput
         className="mr-6 ml-6"
         value={searchValue}
-        onChange={onChange}
+        onChange={handleInputChange}
         onSearch={handleSearch}
       />
 
