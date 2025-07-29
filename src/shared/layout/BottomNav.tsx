@@ -2,6 +2,7 @@ import solutionIc from '@/assets/solutionIc.svg';
 import homeIc from '@/assets/homeIc.svg';
 import settingIc from '@/assets/settingIc.svg';
 import boardsIc from '@/assets/boardsIc.svg';
+import chatIc from '@/assets/chatIc.svg';
 import { useNavigate } from 'react-router-dom';
 
 const BottomNav = () => {
@@ -18,6 +19,17 @@ const BottomNav = () => {
         navigate('/problems');
       },
     },
+    {
+      title: '챗봇',
+      width: 18,
+      height: 18,
+      icon: chatIc,
+      alt: 'chat',
+      onClick: () => {
+        navigate('/new-chat');
+      },
+    },
+
     {
       title: '홈',
       width: 16,

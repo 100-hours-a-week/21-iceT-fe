@@ -1,48 +1,47 @@
 import PostForm, { IPostFormData } from '@/features/post/components/PostForm';
 import { useCreatePost } from '@/features/post/hooks/useCreatePost';
 import PageHeader from '@/shared/layout/PageHeader';
+import { AxiosError } from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CreatePostPage = () => {
   const [isLoading, setIsLoading] = useState(false);
+
   const createPostMutation = useCreatePost();
   const navigate = useNavigate();
 
-  const handleCreatePost = (data: IPostFormData) => {
-    try {
-      setIsLoading(true);
-      createPostMutation.mutateAsync(
-        {
-          problemNumber: data.post.problemNumber,
-          title: data.post.title,
-          content: data.post.content,
-          category: data.post.category,
+  const handleCreatePost = async (data: IPostFormData) => {
+    setIsLoading(true);
+
+    createPostMutation.mutate(
+      {
+        problemNumber: data.post.problemNumber,
+        title: data.post.title,
+        content: data.post.content,
+        category: data.post.category,
+      },
+      {
+        onSuccess: response => {
+          setIsLoading(false);
+          if (response?.postId) {
+            navigate(`/post/${response.postId}`);
+          } else {
+            navigate('/posts');
+          }
         },
-        {
-          onSuccess: response => {
-            // response에서 postId 추출하여 해당 게시글 상세 페이지로 이동
-            if (response?.postId) {
-              navigate(`/post/${response.postId}`);
-            } else {
-              navigate('/posts');
-            }
-          },
-          onError: (error: any) => {
-            if (error.response?.data?.code === 'BAD_REQUEST') {
-              const message = error.response.data.message;
-              alert(message);
-            } else {
-              alert('게시글 등록에 실패했습니다.');
-            }
-          },
-        }
-      );
-    } catch {
-      alert('게시글 등록에 실패했습니다');
-    } finally {
-      setIsLoading(false);
-    }
+        onError: (error: unknown) => {
+          setIsLoading(false);
+          let message = '게시글 등록에 실패했습니다.';
+
+          if (error instanceof AxiosError) {
+            message = error.response?.data?.message;
+          }
+
+          alert(message);
+        },
+      }
+    );
   };
 
   return (

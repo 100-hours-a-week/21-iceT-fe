@@ -1,22 +1,15 @@
-import { formatDate } from '@/utils/formatDate';
-import { useNavigate } from 'react-router-dom';
-import { convertEnglishCategoryToKorean } from '@/utils/doMappingCategories';
+import { formatDate } from '@/shared//utils/formatDate';
+import { convertEnglishCategoryToKorean } from '@/shared/utils/doMappingCategories';
 import { Post } from '../types/post';
-
 interface IPostItemProps {
   post: Post;
+  onClickPost: (id: number) => void;
 }
 
-const PostItem = ({ post }: IPostItemProps) => {
-  const navigate = useNavigate();
-
-  const onClickPost = () => {
-    navigate(`/post/${post.postId}`);
-  };
-
+const PostItem = ({ post, onClickPost }: IPostItemProps) => {
   return (
     <div
-      onClick={onClickPost}
+      onClick={() => onClickPost(post.postId)}
       className="bg-surface p-4 border-b border-border cursor-pointer hover:bg-gray-50 transition-colors"
     >
       <div className="flex flex-wrap gap-1 mb-2">

@@ -3,7 +3,7 @@ import useConfirmAlarm from '../hooks/useConfirmAlarm';
 import { Alarm } from '../types/alarm';
 import { getNotificationIcon } from '../utils/getNotificationIcon';
 import { getAlarmMessage } from '../utils/getAlarmMessage';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/shared/utils/formatDate';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/constants/queryKeys';
 

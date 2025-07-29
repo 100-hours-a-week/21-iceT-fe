@@ -1,7 +1,10 @@
 // src/shared/ui/AlgorithmDropdown/index.tsx
 
-import { KOREAN_ALGORITHM_CATEGORIES } from '@/utils/doMappingCategories';
-import { useState, useRef, useEffect } from 'react';
+import useInput from '@/shared/hooks/useInput';
+import { KOREAN_ALGORITHM_CATEGORIES } from '@/shared/utils/doMappingCategories';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import Input from '../Input';
+import useDebounce from '@/shared/hooks/useDebounce';
 
 interface IAlgorithmDropdownProps {
   selectedTypes: string[];
@@ -16,6 +19,8 @@ const AlgorithmDropdown = ({
 }: IAlgorithmDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { value, onChange } = useInput();
+  const debouncedValue = useDebounce(value, 200);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -31,6 +36,17 @@ const AlgorithmDropdown = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // 필터된 알고리즘 목록
+  const filteredAlgorithms = useMemo(() => {
+    if (!debouncedValue.trim()) {
+      return KOREAN_ALGORITHM_CATEGORIES;
+    }
+
+    return KOREAN_ALGORITHM_CATEGORIES.filter(algorithm =>
+      algorithm.toLowerCase().includes(debouncedValue.toLowerCase())
+    );
+  }, [debouncedValue]);
 
   return (
     <div className="flex items-center gap-2 mt-3">
@@ -69,7 +85,19 @@ const AlgorithmDropdown = ({
         {isOpen && (
           <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
             <div className="p-3">
-              <div className="flex justify-between items-center mb-3">
+              <div className="relative mb-4">
+                <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 focus-within:border-blue-500 transition-colors">
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={onChange}
+                    placeholder="알고리즘 유형 검색"
+                    className=" outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center mb-3 mt-3">
                 <span className="text-sm font-medium text-gray-700">알고리즘 유형 선택</span>
                 {selectedTypes.length > 0 && (
                   <button
@@ -81,7 +109,7 @@ const AlgorithmDropdown = ({
                 )}
               </div>
               <div className="space-y-1">
-                {KOREAN_ALGORITHM_CATEGORIES.map(type => (
+                {filteredAlgorithms.map(type => (
                   <button
                     key={type}
                     onClick={() => onToggleType(type)}

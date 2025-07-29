@@ -1,7 +1,7 @@
 import useModal from '@/shared/hooks/useModal';
 import { CategoryBox } from '@/shared/ui/CategoryBox';
 import ConfirmModal from '@/shared/ui/ConfirmModal';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/shared/utils/formatDate';
 import { useState } from 'react';
 import useDeletePost from '../hooks/useDeletePost';
 import { useNavigate } from 'react-router-dom';
