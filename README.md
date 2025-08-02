@@ -1,6 +1,9 @@
 
 <img width="1738" height="1079" alt="image (40)" src="https://github.com/user-attachments/assets/7752d10d-0b07-4430-bdb3-bf749b090751" />
 
+[🎥시연영상 바로가기🚀](https://youtu.be/_Z_Zd9Cayak?feature=shared)
+
+
 # KOCO (코코) - 코딩 교육 플랫폼
 
 카카오테크 부트캠프 교육생을 위한 코딩테스트 교육 플랫폼입니다.
